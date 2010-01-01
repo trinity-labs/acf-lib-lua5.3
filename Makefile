@@ -1,6 +1,6 @@
 APP_NAME=lib
 PACKAGE=acf-$(APP_NAME)
-VERSION=0.1.1
+VERSION=0.1.2
 
 APP_DIST=\
 	*.lua\
@@ -14,7 +14,7 @@ TAR=tar
 
 P=$(PACKAGE)-$(VERSION)
 tarball=$(P).tar.bz2
-install_dir=/usr/share/lua/5.1/
+install_dir=$(DESTDIR)/usr/share/lua/5.1/
 
 all:
 clean:
@@ -24,7 +24,7 @@ dist: $(tarball)
 
 install:
 	mkdir -p "$(install_dir)"
-	cp -a $(APP_DIST) "$(DESTDIR)$(install_dir)"
+	cp -a $(APP_DIST) "$(install_dir)"
 
 $(tarball):	$(DISTFILES)
 	rm -rf $(P)
