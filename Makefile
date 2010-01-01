@@ -1,6 +1,6 @@
 APP_NAME=lib
 PACKAGE=acf-$(APP_NAME)
-VERSION=0.1.0
+VERSION=0.1.1
 
 APP_DIST=\
 	*.lua\
@@ -24,7 +24,7 @@ dist: $(tarball)
 
 install:
 	mkdir -p "$(install_dir)"
-	cp -a $(APP_DIST) "$(install_dir)"
+	cp -a $(APP_DIST) "$(DESTDIR)$(install_dir)"
 
 $(tarball):	$(DISTFILES)
 	rm -rf $(P)
