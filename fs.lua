@@ -61,6 +61,17 @@ function create_file ( path )
 	return is_file(path)
 end
 
+-- Copies the permissions and ownership of one file to another (if they exist and are the same type)
+function copy_properties(source, dest)
+	if posix.stat(source or "", "type") == posix.stat(dest or "", "type") then
+		local stats = posix.stat(source)
+		posix.chmod(dest, stats.mode)
+		posix.chown(dest, stats.uid, stats.gid)
+		return true
+	end
+	return false
+end
+
 -- Copies a file to a directory or new filename (creating the directory if necessary)
 -- fails if new file is already a directory (this is different than cp function)
 -- if newpath ends in "/", will treat as a directory
@@ -76,6 +87,7 @@ function copy_file(oldpath, newpath)
 	new:write(old:read("*a"))
 	new:close()
 	old:close()
+	copy_properties(oldpath, newpath)
 	return is_file(newpath)
 end
 
