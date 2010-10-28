@@ -159,7 +159,7 @@ end
 
 
 -- v.value is the selected item (or an array if multiple)
--- v.option is an array of valid options
+-- v.option is an array of valid options (or an array of value, label)
 -- NOTE use of value and values (plural)
 function form.select ( v )
 	if ( v.name == nil ) then 
@@ -184,29 +184,27 @@ function form.select ( v )
 		for x,val in ipairs(v.value) do
 			reverseval[val]=x
 		end
+	else
+		reverseval[v.value]=1
 	end
-	local selected = false
 	for i, k in ipairs ( v.option ) do
-		local val = k
-		local txt = nil
-		if type(val) == "table" then
-			txt=val[1]
-			val=val[0]
+		local val, label
+		if type(k) == "string" then
+			val = k
+			label = k
+		else
+			val = k.value
+			label = k.label
 		end
 		str = str .. "<option "
-		if type(v.value) == "table" then
-			if reverseval[val] then
-				str = str .. " selected"
-				selected = true
-			end
-		elseif ( v.value == val ) then
+		if reverseval[val] then
 			str = str .. " selected"
-			selected = true
+			reverseval[val] = nil
 		end
-		str = str .. nv_pair("value", val) .. ">" .. html_escape(val) .. "</option>"
+		str = str .. nv_pair("value", val) .. ">" .. html_escape(label) .. "</option>"
 	end
-	if not selected then
-		str = str .. '<option selected value="' .. html_escape(v.value) ..'">[' .. html_escape(v.value) .. ']</option>'
+	for val in pairs(reverseval) do
+		str = str .. '<option selected value="' .. html_escape(val) ..'">[' .. html_escape(val) .. ']</option>'
 	end
 	str = str .. "</select>"
 	return (str)
