@@ -89,11 +89,11 @@ local generic_input = function ( field_type, v )
 		return nil
 	end
 	
-	local str = string.format ( '<input class="%s" type="%s" ', html_escape(field_type), html_escape(field_type) )
+	local str = string.format ( '<input class="%s %s" type="%s" ', html_escape(v.class), html_escape(field_type), html_escape(field_type) )
 
 	for i,k in ipairs ( {
 			"name", "size", "checked", "maxlength", 
-			"value", "length",   "class", "id", "src",
+			"value", "length", "id", "src",
 			"align", "alt", "contenteditable", "readonly", 
 			"tabindex", "accesskey", "onfocus", "onblur"
 			} ) do
