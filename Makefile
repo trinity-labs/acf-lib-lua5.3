@@ -14,7 +14,7 @@ TAR=tar
 
 P=$(PACKAGE)-$(VERSION)
 tarball=$(P).tar.bz2
-install_dir=$(DESTDIR)/usr/share/lua/5.1/
+install_dir=$(DESTDIR)/usr/share/lua/5.1/acf
 
 all:
 clean:
@@ -25,6 +25,10 @@ dist: $(tarball)
 install:
 	mkdir -p "$(install_dir)"
 	cp -a $(APP_DIST) "$(install_dir)"
+	# compatibility symlinks
+	for lib in $(APP_DIST); do \
+		ln -s acf/$$lib "$(install_dir)"/../$$lib; \
+	done
 
 $(tarball):	$(DISTFILES)
 	rm -rf $(P)
