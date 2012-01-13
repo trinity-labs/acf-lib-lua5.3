@@ -1,6 +1,6 @@
 APP_NAME=lib
 PACKAGE=acf-$(APP_NAME)
-VERSION=0.2.1
+VERSION=0.3.0
 
 APP_DIST=\
 	*.lua\
@@ -27,7 +27,7 @@ install:
 	cp -a $(APP_DIST) "$(install_dir)"
 	# compatibility symlinks
 	for lib in $(APP_DIST); do \
-		ln -s acf/$$lib "$(install_dir)"/../$$lib; \
+		ln -sf acf/$$lib "$(install_dir)"/../$$lib; \
 	done
 
 $(tarball):	$(DISTFILES)
