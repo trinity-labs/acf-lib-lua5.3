@@ -46,9 +46,9 @@ function read_initrunlevels()
 	local cmdresult = f:read("*a") or ""
 	f:close()
 	for line in string.gmatch(cmdresult, "([^\n]*)\n?") do
-                local service = string.match(line, "^%s*(%S+)")
-                local runlevels = string.match(line, "|%s*(%S.*)")
-		if service then
+		local service = string.match(line, "^%s*(%S+)")
+		local runlevels = string.match(line, "|%s*(%S.*)")
+		if service and service ~= "rcK" and service ~= "rcL" and service ~= "rcS" then
 			local runlevel = {}
 			if runlevels then
 				runlevel = format.string_to_table(string.gsub(runlevels, "%s+$", ""), "%s+") or {}
