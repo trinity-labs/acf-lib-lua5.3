@@ -109,7 +109,6 @@ function delete_runlevels(servicename, runlevels)
 end
 
 function daemoncontrol (process, action)
-
 	local cmdresult = ""
 	local cmderrors
 	if not process then
@@ -125,6 +124,22 @@ function daemoncontrol (process, action)
 		end
 	end
 	return cmdresult,cmderrors
+end
+
+function daemon_actions (process)
+	local actions = {"start", "stop", "restart", "describe", "zap"}
+	local description
+	local res, err = daemoncontrol(process, "describe")
+	if err then
+		return nil, err
+	else
+		lines = format.string_to_table(res, "\n")
+		description = string.match(lines[1], "^%s*%*%s*(.*)")
+		for i=2,#lines,1 do
+			actions[#actions+1] = string.match(lines[i], "^%s*%*%s*(%w*)")
+		end
+	end
+	return actions, description
 end
 
 -- the following methods are available:
