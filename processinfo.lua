@@ -127,7 +127,7 @@ function daemoncontrol (process, action)
 end
 
 function daemon_actions (process)
-	local actions = {"start", "stop", "restart", "describe", "zap"}
+	local actions = {"status", "start", "stop", "restart", "describe", "zap"}
 	local description
 	local res, err = daemoncontrol(process, "describe")
 	if err then
@@ -136,7 +136,7 @@ function daemon_actions (process)
 		lines = format.string_to_table(res, "\n")
 		description = string.match(lines[1], "^%s*%*%s*(.*)")
 		for i=2,#lines,1 do
-			actions[#actions+1] = string.match(lines[i], "^%s*%*%s*(%w*)")
+			actions[#actions+1] = string.match(lines[i], "^%s*%*%s*([^:]*)")
 		end
 	end
 	return actions, description
