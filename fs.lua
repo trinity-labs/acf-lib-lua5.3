@@ -8,7 +8,7 @@
 module (..., package.seeall)
 
 require("posix")
-require("format")
+format = require("acf.format")
 
 -- generic wrapper funcs
 function is_dir ( pathstr )

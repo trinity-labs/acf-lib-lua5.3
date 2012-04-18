@@ -3,8 +3,8 @@
 module(..., package.seeall)
 
 require("posix")
-require("format")
-require("fs")
+format = require("acf.format")
+fs = require("acf.fs")
 
 --global for date formating see below for more information
 --Mon Nov 26 19:56:10 UTC 2007 looks like most systems use this

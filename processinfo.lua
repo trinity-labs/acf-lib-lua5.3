@@ -2,9 +2,9 @@
 module(..., package.seeall)
 
 require("posix")
-require("fs")
-require("format")
-require("apk")
+fs = require("acf.fs")
+format = require("acf.format")
+apk = require("acf.apk")
 
 local path = "PATH=/usr/bin:/bin:/usr/sbin:/sbin "
 
