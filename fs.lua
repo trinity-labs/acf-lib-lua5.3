@@ -36,11 +36,11 @@ end
 
 -- Deletes a directory along with its contents
 function remove_directory ( path )
-	if fs.is_dir(path) then
+	if is_dir(path) then
 		for d in posix.files(path) do
 			if (d == ".") or (d == "..") then
 				-- ignore
-			elseif fs.is_dir(path .. "/" ..  d) then
+			elseif is_dir(path .. "/" ..  d) then
 				remove_directory(path .. "/" ..d)
 			else
 				os.remove(path .. "/" ..d)
@@ -165,7 +165,7 @@ function write_line_file ( path, str )
 	if ( file) then
 		local c = file:read("*a") or ""
 		file:close()
-		fs.write_file(path, c .. (str or ""))
+		write_file(path, c .. (str or ""))
 	end
 end
 
@@ -176,20 +176,20 @@ function find_files_as_array ( what, where, follow, t )
 	t =  t or {}
 	
 	local link
-	if follow and fs.is_link(where) then
+	if follow and is_link(where) then
 		link = posix.readlink(where)
 		if not string.find(link, "^/") then
 			link = posix.dirname(where).."/"..link
 		end
 	end
 
-	if fs.is_dir(where) or (link and fs.is_dir(link)) then
+	if is_dir(where) or (link and is_dir(link)) then
 		for d in posix.files ( where ) do
 			if (d == ".") or ( d == "..") then
 				-- do nothing
-			elseif fs.is_dir ( where .. "/" ..  d ) then
+			elseif is_dir ( where .. "/" ..  d ) then
 				find_files_as_array (what, where .. "/" .. d, follow, t )
-			elseif follow and fs.is_link ( where .. "/" ..  d ) then
+			elseif follow and is_link ( where .. "/" ..  d ) then
 				find_files_as_array (what, where .. "/" .. d, follow, t )
 			elseif (string.match (d, "^" .. what .. "$" ))  then
 				table.insert (t, ( string.gsub ( where .. "/" .. d, "/+", "/" ) ) )
