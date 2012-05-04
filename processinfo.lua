@@ -128,6 +128,10 @@ end
 
 function daemon_actions (process)
 	local actions = {"status", "start", "stop", "restart", "describe", "zap"}
+	local reverse = {}
+	for i,a in ipairs(actions) do
+		reverse[a] = i
+	end
 	local description
 	local res, err = daemoncontrol(process, "describe")
 	if err then
@@ -136,7 +140,11 @@ function daemon_actions (process)
 		lines = format.string_to_table(res, "\n")
 		description = string.match(lines[1], "^%s*%*%s*(.*)")
 		for i=2,#lines,1 do
-			actions[#actions+1] = string.match(lines[i], "^%s*%*%s*([^:]*)")
+			local act = string.match(lines[i], "^%s*%*%s*([^:]*)")
+			if act and not reverse[act] then
+				actions[#actions+1] = act
+				reverse[act] = #actions
+			end
 		end
 	end
 	return actions, description
