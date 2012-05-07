@@ -3,6 +3,8 @@
 --------------------------------------------------
 module (..., package.seeall)
 
+format = require("acf.format")
+
 function is_string ( str )
 	return (type(str) == "string")
 end
