@@ -178,7 +178,7 @@ function find_files_as_array ( what, where, follow, t )
 	local link
 	if follow and is_link(where) then
 		link = posix.readlink(where)
-		if not string.find(link, "^/") then
+		if link and not string.find(link, "^/") then
 			link = posix.dirname(where).."/"..link
 		end
 	end
