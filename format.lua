@@ -20,7 +20,7 @@ end
 
 -- Escape shell special characters
 function escapespecialcharacters ( str )
-	return (string.gsub(str or "", "[~`#%$&%*%(%)\\|%[%]{};\'\"<>/]", "\\%1"))
+	return (string.gsub(str or "", "[~`#%$&%*%(%)\\|%[%]{};\'\"<>/\n\r]", "\\%1"))
 end
 
 -- search and remove all blank and commented lines from a string or table of lines
