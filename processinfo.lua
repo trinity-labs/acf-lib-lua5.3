@@ -5,8 +5,7 @@ require("posix")
 fs = require("acf.fs")
 format = require("acf.format")
 apk = require("acf.apk")
-
-local path = "PATH=/usr/bin:/bin:/usr/sbin:/sbin "
+require("subprocess")
 
 function package_version(packagename)
 	local result = apk.version(packagename)
@@ -20,9 +19,7 @@ end
 function process_autostart(servicename)
 	local result
 	local errtxt = "Not programmed to autostart"
-	local f = io.popen( "/sbin/rc-update show" )
-	local cmdresult = f:read("*a") or ""
-	f:close()
+	local code, cmdresult = subprocess.call_capture({"rc-update", "show"})
 	for line in string.gmatch(cmdresult, "[^\n]+") do
 		if string.match(line, "^%s*"..format.escapemagiccharacters(servicename).."%s+|") then
 			local runlevels = string.match(line, "|(.*)")
@@ -42,9 +39,7 @@ end
 
 function read_initrunlevels()
 	local config = {}
-	local f = io.popen( "/sbin/rc-update show -v" )
-	local cmdresult = f:read("*a") or ""
-	f:close()
+	local code, cmdresult = subprocess.call_capture({"rc-update", "show", "-v"})
 	for line in string.gmatch(cmdresult, "([^\n]*)\n?") do
 		local service = string.match(line, "^%s*(%S+)")
 		local runlevels = string.match(line, "|%s*(%S.*)")
@@ -66,15 +61,14 @@ function add_runlevels(servicename, runlevels)
 		cmderrors = "Invalid service name"
 	else
 		if runlevels and #runlevels > 0 then
-			local cmd = {path, "rc-update add"}
-			cmd[#cmd+1] = format.escapespecialcharacters(servicename)
+			local cmd = {"rc-update", "add"}
+			cmd[#cmd+1] = servicename
 			for i,lev in ipairs(runlevels) do
 				cmd[#cmd+1] = lev
 			end
-			cmd[#cmd+1] = "2>&1"
-			local f = io.popen(table.concat(cmd, " "))
-			cmdresult = f:read("*a")
-			f:close()
+			cmd.stderr = subprocess.STDOUT
+			local code
+			code, cmdresult = subprocess.call_capture(cmd)
 			cmdresult = string.gsub(cmdresult, "\n+$", "")
 		else
 			cmdresult = "No runlevels added"
@@ -90,15 +84,14 @@ function delete_runlevels(servicename, runlevels)
 		cmderrors = "Invalid service name"
 	else
 		if runlevels and #runlevels > 0 then
-			local cmd = {path, "rc-update del"}
-			cmd[#cmd+1] = format.escapespecialcharacters(servicename)
+			local cmd = {"rc-update", "del"}
+			cmd[#cmd+1] = servicename
 			for i,lev in ipairs(runlevels) do
 				cmd[#cmd+1] = lev
 			end
-			cmd[#cmd+1] = "2>&1"
-			local f = io.popen(table.concat(cmd, " "))
-			cmdresult = f:read("*a")
-			f:close()
+			cmd.stderr = subprocess.STDOUT
+			local code
+			code, cmdresult = subprocess.call_capture(cmd)
 			cmdresult = string.gsub(cmdresult, "\n+$", "")
 		else
 			cmdresult = "No runlevels deleted"
@@ -116,11 +109,12 @@ function daemoncontrol (process, action)
 	elseif not action then
 		cmderrors = "Invalid action"
 	else
-		local file = io.popen( "PATH=/usr/local/bin:/usr/bin:/bin:/usr/local/sbin:/usr/sbin:/sbin /etc/init.d/" .. 
-			format.escapespecialcharacters(process) .. " " .. format.escapespecialcharacters(string.lower(action)) .. " 2>&1" )
-		if file ~= nil then
-			cmdresult = file:read( "*a" )
-			file:close()
+		local res, err = pcall(function()
+			local code
+			code, cmdresult = subprocess.call_capture({"/etc/init.d/" .. process, string.lower(action), stderr=subprocess.STDOUT})
+		end)
+		if not res or err then
+			cmdresult = string.gsub(err or "Unknown failure", ": No such file or directory", "-ash: /etc/init.d/"..process..": not found")
 		end
 	end
 	return cmdresult,cmderrors

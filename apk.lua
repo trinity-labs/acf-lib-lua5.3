@@ -1,15 +1,11 @@
 -- apk library
 module (..., package.seeall)
 
-local path = "PATH=/usr/local/bin:/usr/bin:/bin:/usr/local/sbin:/usr/sbin:/sbin "
+require("subprocess")
 
 delete = function(package)
 	local success = false
-	local cmdresult
-	local cmd = path .. "apk del " .. package .. " 2>&1"
-	local f = io.popen( cmd )
-	cmdresult = f:read("*a") or ""
-	f:close()
+	local code, cmdresult = subprocess.call_capture({"apk", "del", package, stderr=subprocess.STDOUT})
 	if string.find(cmdresult, "^OK") then
 		cmdresult = "ERROR: Package not found\n"..cmdresult
 	elseif not string.find(cmdresult, "ERROR") then
@@ -20,11 +16,7 @@ end
 
 install = function(package)
 	local success = true
-	local cmdresult
-	local cmd = path .. "apk add " .. package .. " 2>&1"
-	local f = io.popen( cmd )
-	cmdresult = f:read("*a")
-	f:close()
+	local code, cmdresult = subprocess.call_capture({"apk", "add", package, stderr=subprocess.STDOUT})
 	if string.find(cmdresult, "^ERROR") then
 		success = false
 	end
@@ -32,11 +24,7 @@ install = function(package)
 end
 
 version = function(package)
-	local cmdresult
-	local cmd = path .. "apk info -ve " .. package .. " 2>&1"
-	local f = io.popen( cmd )
-	cmdresult = f:read("*a")
-	f:close()
+	local code, cmdresult = subprocess.call_capture({"apk", "info", "-ve", package, stderr=subprocess.STDOUT})
 	if string.find(cmdresult, "^%s*$") then
 		cmdresult = nil
 	end
