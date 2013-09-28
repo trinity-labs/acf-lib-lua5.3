@@ -147,7 +147,11 @@ export.listdatabases = function(dbobject)
 			cmd[#cmd+1] = "-p"
 			cmd[#cmd+1] = dbobject.port
 		end
+		cmd["stderr"]=subprocess.STDOUT
 		local code, cmdresult = subprocess.call_capture(cmd)
+		if code ~= 0 then
+			error(cmdresult, 0)
+		end
 		for line in string.gmatch(cmdresult or "", "[^\n]+") do
 			local table = string.match(line, "%s*([^ |]*)")
 			if table and table ~= "" then
