@@ -1,7 +1,6 @@
 module(..., package.seeall)
 
--- ################################################################################
--- PRIVATE DATABASE FUNCTIONS
+require("subprocess")
 
 local function assert (v, m)
 	if not v then
@@ -11,13 +10,18 @@ local function assert (v, m)
 	return v, m
 end
 
+-- ################################################################################
+-- PRIVATE DATABASE FUNCTIONS TO BE EXPORTED FOR EACH OBJECT
+
+local export = {}
+
 -- Escape special characters in sql statements
-local escape = function(dbobject, sql)
+export.escape = function(dbobject, sql)
 	sql = sql or ""
 	return dbobject.con:escape(sql)
 end
 
-local databaseconnect = function(dbobject)
+export.databaseconnect = function(dbobject)
 	if not dbobject.con then
 		-- create environment object
 		if dbobject.engine == engine.postgresql then
@@ -34,7 +38,7 @@ local databaseconnect = function(dbobject)
 	return false
 end
 
-local databasedisconnect = function(dbobject)
+export.databasedisconnect = function(dbobject)
 	if dbobject.env then
 		dbobject.env:close()
 		dbobject.env = nil
@@ -45,13 +49,13 @@ local databasedisconnect = function(dbobject)
 	end
 end
 
-local runscript = function(dbobject, script, transaction)
+export.runscript = function(dbobject, script, transaction)
 	for i,scr in ipairs(script) do
 		dbobject.runsqlcommand(scr, transaction)
 	end
 end
 
-local runsqlcommand = function(dbobject, sql, transaction)
+export.runsqlcommand = function(dbobject, sql, transaction)
 	if transaction then assert(dbobject.con:execute("SAVEPOINT before_command")) end
         local res, err = dbobject.con:execute(sql)
 	if not res and err then
@@ -74,7 +78,7 @@ local runsqlcommand = function(dbobject, sql, transaction)
 	end
 end
 
-local getselectresponse = function(dbobject, sql, transaction)
+export.getselectresponse = function(dbobject, sql, transaction)
 	local retval = {}
 	if transaction then assert(dbobject.con:execute("SAVEPOINT before_select")) end
         local res, err = pcall(function()
@@ -106,7 +110,7 @@ local getselectresponse = function(dbobject, sql, transaction)
 	return retval
 end
 
-local listtables = function(dbobject)
+export.listtables = function(dbobject)
 	local result = {}
 	if dbobject.engine == engine.postgresql then
 		local tab = dbobject.getselectresponse("SELECT tablename FROM pg_tables WHERE tablename !~* 'pg_*' ORDER BY tablename ASC")
@@ -120,12 +124,35 @@ local listtables = function(dbobject)
 	return result
 end
 
-local listcolumns = function(dbobject, table)
+export.listcolumns = function(dbobject, table)
 	local result = {}
 	if dbobject.engine == engine.postgresql then
 		local col = dbobject.getselectresponse("SELECT a.attname AS field FROM pg_class c, pg_attribute a, pg_type t WHERE c.relname = '"..escape(dbobject, table).."' AND a.attnum > 0 AND a.attrelid = c.oid AND a.atttypid = t.oid ORDER BY a.attnum")
 		for i,c in ipairs(col) do
 			result[#result+1] = c.field
+		end
+	end
+	return result
+end
+
+export.listdatabases = function(dbobject)
+	local result = {}
+	if dbobject.engine == engine.postgresql then
+		local cmd = {"psql", "-U", "postgres", "-lt"}
+		if dbobject.host then
+			cmd[#cmd+1] = "-h"
+			cmd[#cmd+1] = dbobject.host
+		end
+		if dbobject.port then
+			cmd[#cmd+1] = "-p"
+			cmd[#cmd+1] = dbobject.port
+		end
+		local code, cmdresult = subprocess.call_capture(cmd)
+		for line in string.gmatch(cmdresult or "", "[^\n]+") do
+			local table = string.match(line, "%s*([^ |]*)")
+			if table and table ~= "" then
+				result[#result+1] = table
+			end
 		end
 	end
 	return result
@@ -140,15 +167,8 @@ engine = {
 
 create = function(engine, name, user, password, host, port)
 	local dbobject = {engine=engine, name=name, user=user, password=password, host=host, port=port}
-	dbobject.escape = function(...) return escape(dbobject, ...) end
-	dbobject.databaseconnect = function(...) return databaseconnect(dbobject, ...) end
-	dbobject.databasedisconnect = function(...) return databasedisconnect(dbobject, ...) end
-	dbobject.runscript = function(...) return runscript(dbobject, ...) end
-	dbobject.runsqlcommand = function(...) return runsqlcommand(dbobject, ...) end
-	dbobject.getselectresponse = function(...) return getselectresponse(dbobject, ...) end
-	dbobject.listtables = function(...) return listtables(dbobject, ...) end
-	dbobject.listcolumns = function(...) return listcolumns(dbobject, ...) end
-	dbobject.isconnected = function() return dbobject.con ~= nil end
-	dbobject.table_creation_scripts = {}
+	for n,f in pairs(export) do
+		dbobject[n] = function(...) return f(dbobject, ...) end
+	end
 	return dbobject
 end
