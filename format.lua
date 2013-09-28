@@ -496,10 +496,17 @@ function get_ini_entry (file, section, value)
 		opts = parse_ini_file(file)
 	end
 	section = section or ""
-	local result = opts[section][value]
+	local result
+	if opts and opts[section] then
+		result = opts[section][value]
+	end
 	if not result then
 		section = ""
-		result = opts[section][value] or ""
+		if opts and opts[section] then
+			result = opts[section][value] or ""
+		else
+			result = ""
+		end
 	end
 	while string.find(result, "%$[%w_]+") do
 		local sub = string.match(result, "%$[%w_]+")
