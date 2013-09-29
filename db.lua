@@ -32,7 +32,7 @@ export.databaseconnect = function(dbobject)
 		end
 
 		-- connect to data source
-		dbobject.con = assert(dbobject.env:connect(dbobject.name, dbobject.user, dbobject.password, dbobject.host, dbobject.port))
+		dbobject.con = assert(dbobject.env:connect(dbobject.database, dbobject.user, dbobject.password, dbobject.host, dbobject.port))
 		return true
 	end
 	return false
@@ -127,7 +127,7 @@ end
 export.listcolumns = function(dbobject, table)
 	local result = {}
 	if dbobject.engine == engine.postgresql then
-		local col = dbobject.getselectresponse("SELECT a.attname AS field FROM pg_class c, pg_attribute a, pg_type t WHERE c.relname = '"..escape(dbobject, table).."' AND a.attnum > 0 AND a.attrelid = c.oid AND a.atttypid = t.oid ORDER BY a.attnum")
+		local col = dbobject.getselectresponse("SELECT a.attname AS field FROM pg_class c, pg_attribute a, pg_type t WHERE c.relname = '"..dbobject.escape(table).."' AND a.attnum > 0 AND a.attrelid = c.oid AND a.atttypid = t.oid ORDER BY a.attnum")
 		for i,c in ipairs(col) do
 			result[#result+1] = c.field
 		end
@@ -169,8 +169,8 @@ engine = {
 ["postgresql"] = 1,
 }
 
-create = function(engine, name, user, password, host, port)
-	local dbobject = {engine=engine, name=name, user=user, password=password, host=host, port=port}
+create = function(engine, database, user, password, host, port)
+	local dbobject = {engine=engine, database=database, user=user, password=password, host=host, port=port}
 	for n,f in pairs(export) do
 		dbobject[n] = function(...) return f(dbobject, ...) end
 	end
