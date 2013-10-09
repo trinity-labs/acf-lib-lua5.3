@@ -1,7 +1,7 @@
 -- apk library
 module (..., package.seeall)
 
-require("subprocess")
+subprocess = require("subprocess")
 
 delete = function(package)
 	local success = false

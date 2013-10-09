@@ -1,11 +1,11 @@
 
 module(..., package.seeall)
 
-require("posix")
+posix = require("posix")
 fs = require("acf.fs")
 format = require("acf.format")
 apk = require("acf.apk")
-require("subprocess")
+subprocess = require("subprocess")
 
 function package_version(packagename)
 	local result = apk.version(packagename)

@@ -2,7 +2,7 @@
 
 module(..., package.seeall)
 
-require("posix")
+posix = require("posix")
 format = require("acf.format")
 fs = require("acf.fs")
 

@@ -7,7 +7,7 @@
 
 module (..., package.seeall)
 
-require("posix")
+posix = require("posix")
 format = require("acf.format")
 
 -- generic wrapper funcs

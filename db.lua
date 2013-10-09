@@ -1,6 +1,6 @@
 module(..., package.seeall)
 
-require("subprocess")
+subprocess = require("subprocess")
 
 local function assert (v, m)
 	if not v then
@@ -25,10 +25,10 @@ export.databaseconnect = function(dbobject)
 	if not dbobject.con then
 		-- create environment object
 		if dbobject.engine == engine.postgresql then
-			require("luasql.postgres")
+			luasql = require("luasql.postgres")
 			dbobject.env = assert (luasql.postgres())
 		elseif dbobject.engine == engine.sqlite3 then
-			require("luasql.sqlite3")
+			luasql = require("luasql.sqlite3")
 			dbobject.env = assert (luasql.sqlite3())
 		else
 			error("Unknown database engine "..tostring(dbobject.engine))
