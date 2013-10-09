@@ -27,6 +27,9 @@ export.databaseconnect = function(dbobject)
 		if dbobject.engine == engine.postgresql then
 			require("luasql.postgres")
 			dbobject.env = assert (luasql.postgres())
+		elseif dbobject.engine == engine.sqlite3 then
+			require("luasql.sqlite3")
+			dbobject.env = assert (luasql.sqlite3())
 		else
 			error("Unknown database engine "..tostring(dbobject.engine))
 		end
@@ -60,7 +63,12 @@ export.runsqlcommand = function(dbobject, sql, transaction)
         local res, err = dbobject.con:execute(sql)
 	if not res and err then
 		-- Catch the error to see if it's caused by lack of table
-		local table = string.match(err, "relation \"(%S+)\" does not exist")
+		local table
+		if dbobject.engine == engine.postgresql then
+			table = string.match(err, "relation \"(%S+)\" does not exist")
+		elseif dbobject.engine == engine.sqlite3 then
+			table = string.match(err, "LuaSQL: no such table: (%S+)")
+		end
 		if table and dbobject.table_creation_scripts[table] then
 			if transaction then assert(dbobject.con:execute("ROLLBACK TO before_command")) end
 			dbobject.runscript(dbobject.table_creation_scripts[table])
@@ -96,7 +104,12 @@ export.getselectresponse = function(dbobject, sql, transaction)
 	end)
 	if not res and err then
 		-- Catch the error to see if it's caused by lack of table
-		local table = string.match(err, "relation \"(%S+)\" does not exist")
+		local table
+		if dbobject.engine == engine.postgresql then
+			table = string.match(err, "relation \"(%S+)\" does not exist")
+		elseif dbobject.engine == engine.sqlite3 then
+			table = string.match(err, "LuaSQL: no such table: (%S+)")
+		end
 		if table and dbobject.table_creation_scripts[table] then
 			if transaction then assert(con:execute("ROLLBACK TO before_select")) end
 			dbobject.runscript(dbobject.table_creation_scripts[table])
@@ -167,6 +180,7 @@ end
 
 engine = {
 ["postgresql"] = 1,
+["sqlite3"] = 2,
 }
 
 create = function(engine, database, user, password, host, port)
