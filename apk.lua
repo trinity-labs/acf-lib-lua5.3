@@ -1,9 +1,9 @@
 -- apk library
-module (..., package.seeall)
+local mymodule = {}
 
-subprocess = require("subprocess")
+mymodule.subprocess = require("subprocess")
 
-delete = function(package)
+mymodule.delete = function(package)
 	local success = false
 	local code, cmdresult = subprocess.call_capture({"apk", "del", package, stderr=subprocess.STDOUT})
 	if string.find(cmdresult, "^OK") then
@@ -14,7 +14,7 @@ delete = function(package)
 	return success, cmdresult
 end
 
-install = function(package)
+mymodule.install = function(package)
 	local success = true
 	local code, cmdresult = subprocess.call_capture({"apk", "add", package, stderr=subprocess.STDOUT})
 	if string.find(cmdresult, "^ERROR") then
@@ -23,10 +23,12 @@ install = function(package)
 	return success, cmdresult
 end
 
-version = function(package)
+mymodule.version = function(package)
 	local code, cmdresult = subprocess.call_capture({"apk", "info", "-ve", package, stderr=subprocess.STDOUT})
 	if string.find(cmdresult, "^%s*$") then
 		cmdresult = nil
 	end
 	return cmdresult
 end
+
+return mymodule

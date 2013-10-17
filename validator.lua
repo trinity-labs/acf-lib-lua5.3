@@ -1,26 +1,26 @@
 --------------------------------------------------
 -- Validation Functions for Alpine Linux' Webconf
 --------------------------------------------------
-module (..., package.seeall)
+local mymodule = {}
 
 format = require("acf.format")
 
-function is_string ( str )
+function mymodule.is_string ( str )
 	return (type(str) == "string")
 end
 
-function is_boolean ( str )
+function mymodule.is_boolean ( str )
 	return (type(str) == "boolean")
 end
 
-function is_number ( str )
+function mymodule.is_number ( str )
 	return (type(str) == "number")
 end
 
 --
 -- This function validates an ipv4 address.
 --
-function is_ipv4(ipv4)
+function mymodule.is_ipv4(ipv4)
 	local retval = false;
 	local nums = {};
 	local iplen = string.len(ipv4);
@@ -62,7 +62,7 @@ end
 --
 -- This function validates a partial ipv4 address.
 --
-function is_partial_ipv4(ipv4)
+function mymodule.is_partial_ipv4(ipv4)
 	local retval = false;
 	local nums = {};
 	
@@ -89,7 +89,7 @@ function is_partial_ipv4(ipv4)
 	return true
 end
 
-function is_mac(mac)
+function mymodule.is_mac(mac)
 
 	local tmpmac = string.upper(mac)
 
@@ -137,7 +137,7 @@ end
 -- consists of number-chars between 0..9 only
 -- and eventually a leading '-'
 --
-function is_integer(numstr)
+function mymodule.is_integer(numstr)
 	-- ^   beginning of string
 	-- -?  one or zero of the char '-'
 	-- %d+ one or more digits
@@ -151,8 +151,8 @@ end
 -- consists of number-chars between 0..9 only
 -- and if it is within a given range.
 --
-function is_integer_in_range(numstr, min, max)
-	return  is_integer(numstr) 
+function mymodule.is_integer_in_range(numstr, min, max)
+	return mymodule.is_integer(numstr) 
 		and tonumber(numstr) >= min
 		and tonumber(numstr) <= max
 	
@@ -162,13 +162,15 @@ end
 -- This function checks if the given number is an integer
 -- and wheter it is between 1 .. 65535
 --
-function is_port(numstr)
-	return  is_integer_in_range(numstr, 1, 65535)
+function mymodule.is_port(numstr)
+	return mymodule.is_integer_in_range(numstr, 1, 65535)
 end
 
-function is_valid_filename ( path, restriction )
+function mymodule.is_valid_filename ( path, restriction )
 	if not (path) or ((restriction) and (string.find (path, "^" .. format.escapemagiccharacters(restriction) ) == nil or string.find (path, "/", #restriction+2) )) then
 		return false
 	end
 	return true
 end
+
+return mymodule

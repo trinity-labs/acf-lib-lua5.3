@@ -1,6 +1,6 @@
 --date and time functions 
 
-module(..., package.seeall)
+local mymodule = {}
 
 posix = require("posix")
 format = require("acf.format")
@@ -9,9 +9,9 @@ fs = require("acf.fs")
 --global for date formating see below for more information
 --Mon Nov 26 19:56:10 UTC 2007 looks like most systems use this
 --print(os.date(date.format))
-formats = "%a %b %d %X %Z %Y"
+mymodule.formats = "%a %b %d %X %Z %Y"
 
-months ={ {"January","Jan"},  
+mymodule.months ={ {"January","Jan"},  
           {"February", "Feb"}, 
           {"March","Mar"}, 
           {"April", "Apr"},
@@ -25,7 +25,7 @@ months ={ {"January","Jan"},
 	  {"December","Dec"}
 	   }
 
-revmonths = {["january"] = 1, ["jan"] = 1, 
+mymodule.revmonths = {["january"] = 1, ["jan"] = 1, 
 	     ["february"] = 2, ["feb"] = 2,
 	     ["march"] = 3, ["mar"] = 3, 
 	     ["april"] = 4, ["apr"] = 4, 
@@ -39,7 +39,7 @@ revmonths = {["january"] = 1, ["jan"] = 1,
 	     ["december"] = 12, ["dec"] = 12 
 	     }
 
-dow = { {"Sunday","Sun"}, 
+mymodule.dow = { {"Sunday","Sun"}, 
 	{"Monday","Mon"},
 	{"Tuesday","Tue"},
 	{"Wednesday","Wed"},
@@ -48,7 +48,7 @@ dow = { {"Sunday","Sun"},
 	{"Saturday","Sat"}
 	}
 	
-revdow = { ["sunday"] = 1, ["sun"] = 2,
+mymodule.revdow = { ["sunday"] = 1, ["sun"] = 2,
 	   ["monday"] = 2, ["mon"] = 2,
 	   ["tuesday"] = 3, ["tue"] = 3,
 	   ["wednesday"] = 4, ["wed"] = 4,
@@ -62,7 +62,7 @@ revdow = { ["sunday"] = 1, ["sun"] = 2,
 --this list is not full. May need some more added. No Africa or Asia
 --Abrr TZ,Real Offset, FullName, Location, What would be put in /etc/TZ(busybox needed offset)
 
-timezones = {
+mymodule.timezones = {
 
 {"A","+1","Alpha Time Zone","Military","Alpha-1"},
 {"ACDT","+10:30","Australian Central Daylight Time","Australia","ACDT-10:30"},
@@ -184,7 +184,7 @@ timezones = {
 --t = { {year=2007,month=1,day=2,hour=2}, {year=2006,month=1,day=5} }
 --will return a table sorted by oldest <-> newest 
 --to grab the largest and smallest a,b=g[1],g[table.maxn(g)]
-function date_to_seconds (t)
+function mymodule.date_to_seconds (t)
 	g = {}
 	count = table.maxn(t)
 	for i = 1,count do
@@ -198,11 +198,11 @@ end
 --format can be changed. This seems to be standard, dow,mon,dom,time,zone,year
 -- seems like %z- +0000 time zone format and %Z- 3 letter timezone undocumented or new
 
-function seconds_to_date (t)
+function mymodule.seconds_to_date (t)
 	g = {}
 	count = table.maxn(t)
 	for i = 1,count do
-	g[#g+1] = os.date(formats,t[i])	
+	g[#g+1] = os.date(mymodule.formats,t[i])	
 	end
 	
 	return g	
@@ -211,11 +211,11 @@ end
 --Wed Nov 28 14:01:23 UTC 2007
 --os.date(date.formats) put into a table
 --year,month,day,hour,min,sec,isdst- may need a dst table to set this automatically
-function string_to_table (str)
-	if str == nil then str = os.date(formats) end
+function mymodule.string_to_table (str)
+	if str == nil then str = os.date(mymodule.formats) end
 	g = {}
 	temp = format.string_to_table(str,"%s")
-	month = abr_month_num(temp[2])
+	month = mymodule.abr_month_num(temp[2])
 	g["month"] = month
 	day = temp[3]
 	g["day"] = day
@@ -239,20 +239,20 @@ end
 --gives a table back with hour,min,month,sec,day,year to display something like
 --you have 10 years, 14 hours, 10 days to renew you certificate
 -- in secs - year,  day, hour,min,sec
-t_time = { field_names = {"years","days","hours","minutes","seconds"},
+mymodule.t_time = { field_names = {"years","days","hours","minutes","seconds"},
 	                   31556926,86400,3600,60,1
 	                   }
 
-function date_diff (d1, d2)
+function mymodule.date_diff (d1, d2)
 	g = {}	
 	if d2 == nil then d2 = os.time() end 
 	--first sum of seconds
 	sum = math.abs(os.difftime(d1,d2))
 	--going to go through and get it smaller with each pass through the table
-	for a,b in ipairs(t_time) do
+	for a,b in ipairs(mymodule.t_time) do
 	print(sum)
 	hold = math.modf(sum/b)
-	g[t_time.field_names[a]] = hold
+	g[mymodule.t_time.field_names[a]] = hold
 	sum = (sum - (hold*b))
 	end
 	
@@ -261,43 +261,43 @@ end
 
 --give a search number and return the month name
 
-function num_month_name (search)
-	return months[search][1]
+function mymodule.num_month_name (search)
+	return mymodule.months[search][1]
 end
 
 --give a search number and return the month abr
 
-function num_month_name_abr (search)
-	return months[search][2]
+function mymodule.num_month_name_abr (search)
+	return mymodule.months[search][2]
 end
 
-function name_month_num (search)
-	return revmonths[string.lower(search)]
+function mymodule.name_month_num (search)
+	return mymodule.revmonths[string.lower(search)]
 end
 
-function abr_month_num (search)
-	return revmonths[string.lower(search)]
+function mymodule.abr_month_num (search)
+	return mymodule.revmonths[string.lower(search)]
 end
 
-function num_dow_name (search)
-	return dow[search][1]
+function mymodule.num_dow_name (search)
+	return mymodule.dow[search][1]
 end
 
-function num_dow_name_abr (search)
-	return dow[search][2]
+function mymodule.num_dow_name_abr (search)
+	return mymodule.dow[search][2]
 end
 
-function name_dow_num (search)
-	return revdow[string.lower(search)]
+function mymodule.name_dow_num (search)
+	return mymodule.revdow[string.lower(search)]
 end
 
-function abr_dow_num (search)
-	return revdow[string.lower(search)]
+function mymodule.abr_dow_num (search)
+	return mymodule.revdow[string.lower(search)]
 end
 
 --tell me what TimeZone my system is set to
 
-function what_tz ()
+function mymodule.what_tz ()
 	f = fs.read_file_as_array("/etc/TZ") or {}
 	local tz = f[1]
 	return tz
@@ -305,15 +305,15 @@ end
 
 --change the timezone my system is set to
 
-function change_tz ( tz )
+function mymodule.change_tz ( tz )
 	--give us something like CET-1, this is busy box offset need to fix.
 	
 	tz = string.gsub(tz, "%+", "%%+")
 	tz = string.gsub(tz, "%-", "%%-")
 	tz = "^" .. tz .. "$"
 	result = {}
-	for a=1,table.maxn(date.timezones) do
-	c = string.match(date.timezones[a][5], tz)
+	for a=1,table.maxn(mymodule.timezones) do
+	c = string.match(mymodule.timezones[a][5], tz)
 	if c ~= nil then result[#result +1] = c end
 	end
 	
@@ -324,5 +324,7 @@ function change_tz ( tz )
 	mess = "Too many matches."
 	end
 		
-	return mess,date.what_tz()
+	return mess,mymodule.what_tz()
 end
+
+return mymodule

@@ -3,14 +3,14 @@
      Copyright (C) 2007  Nathan Angelacos
      Licensed under the terms of GPL2
 ]]--
-module (..., package.seeall)
+local mymodule = {}
 
 --[[ Cookie functions ]]------------------------------------------------------
-cookie={}
+mymodule.cookie={}
 
 -- Set a cookie - returns a string suitable for setting a cookie
 -- if the value is the boolean "false", then set the cookie to expire
-cookie.set = function ( name, value, path )
+mymodule.cookie.set = function ( name, value, path )
 	local expires = ""
 	if name == nil then
 		return ("")
@@ -22,20 +22,20 @@ cookie.set = function ( name, value, path )
 	if path == nil then
 		path = "/"
 	end
-	return (string.format('Set-Cookie: %s=%s; path=%s; %s\n', html_escape(tostring(name)), 
-		html_escape(tostring(value)), html_escape(path), html_escape(expires)))
+	return (string.format('Set-Cookie: %s=%s; path=%s; %s\n', mymodule.html_escape(tostring(name)), 
+		mymodule.html_escape(tostring(value)), mymodule.html_escape(path), mymodule.html_escape(expires)))
 end
 
 
 -- wrapper function to clear a cookie
-cookie.unset = function ( name, path)
-	return cookie.set (name, false, path)
+mymodule.cookie.unset = function ( name, path)
+	return mymodule.cookie.set (name, false, path)
 end
 
 
 
 -- escape unsafe html characters
-function html_escape (text )
+function mymodule.html_escape (text )
 	text = text or "" 
 	local str = string.gsub (text, "&", "&amp;" )
 	str = string.gsub (str, "<", "&lt;" )
@@ -57,7 +57,7 @@ local nv_pair = function ( name, value)
 	if ( value == nil ) then
 		return ( "" )
 	else
-		return (string.format (' %s="%s" ', html_escape(name) , html_escape(value) ))
+		return (string.format (' %s="%s" ', mymodule.html_escape(name) , mymodule.html_escape(value) ))
 	end
 end
 
@@ -89,7 +89,7 @@ local generic_input = function ( field_type, v )
 		return nil
 	end
 	
-	local str = string.format ( '<input class="%s %s" type="%s" ', html_escape(v.class), html_escape(field_type), html_escape(field_type) )
+	local str = string.format ( '<input class="%s %s" type="%s" ', mymodule.html_escape(v.class), mymodule.html_escape(field_type), mymodule.html_escape(field_type) )
 
 	for i,k in ipairs ( {
 			"name", "size", "checked", "maxlength", 
@@ -111,13 +111,13 @@ end
 --[[ Form functions ]]------------------------------------------------------
 -- These expect something like a cfe to work (see mvc.lua)
 
-form = {}
-form.text = function ( v )
+mymodule.form = {}
+mymodule.form.text = function ( v )
 	return generic_input ( "text", v )
 end
 
 
-form.longtext = function ( v )
+mymodule.form.longtext = function ( v )
 	local str = "<textarea"
 	for i,k in ipairs ( {
 				"name", "rows", "cols",
@@ -127,33 +127,33 @@ form.longtext = function ( v )
 		str = str .. nv_pair ( k, v[k] )
 	end
 	str = str .. nv_pair (nil, v.disabled)
-	return ( str .. ">" .. html_escape(v.value) .. "</textarea>" )
+	return ( str .. ">" .. mymodule.html_escape(v.value) .. "</textarea>" )
 end
 
 
-function form.password ( v )
+function mymodule.form.password ( v )
 	return generic_input ( "password", v )
 end
 
-function form.hidden ( v )
+function mymodule.form.hidden ( v )
 	return generic_input ( "hidden", v )
 end
 
 
-function form.submit ( v )
+function mymodule.form.submit ( v )
 	return generic_input ( "submit", v )
 end
 
 
-function form.action (v) 
+function mymodule.form.action (v) 
 	return generic_input ("submit", v)
 end
 
-function form.file ( v )
+function mymodule.form.file ( v )
 	return generic_input ( "file", v )
 end
 
-function form.image ( v )
+function mymodule.form.image ( v )
 	return generic_input ( "image", v )
 end
 
@@ -161,7 +161,7 @@ end
 -- v.value is the selected item (or an array if multiple)
 -- v.option is an array of valid options (or an array of value, label)
 -- NOTE use of value and values (plural)
-function form.select ( v )
+function mymodule.form.select ( v )
 	if ( v.name == nil ) then 
 		return nil 
 	end
@@ -201,22 +201,22 @@ function form.select ( v )
 			str = str .. " selected"
 			reverseval[val] = nil
 		end
-		str = str .. nv_pair("value", val) .. ">" .. html_escape(label) .. "</option>"
+		str = str .. nv_pair("value", val) .. ">" .. mymodule.html_escape(label) .. "</option>"
 	end
 	for val in pairs(reverseval) do
-		str = str .. '<option selected value="' .. html_escape(val) ..'">[' .. html_escape(val) .. ']</option>'
+		str = str .. '<option selected value="' .. mymodule.html_escape(val) ..'">[' .. mymodule.html_escape(val) .. ']</option>'
 	end
 	str = str .. "</select>"
 	return (str)
 end
 
-function form.checkbox ( v )
+function mymodule.form.checkbox ( v )
        	return generic_input ( "checkbox", v )
 end
 
 
 -- NOTE:  VALUE of a form is a table containing the form elements ... 
-function form.start ( v)
+function mymodule.form.start ( v)
 	if ( v.action == nil ) then 
 		return nil 
 	end
@@ -224,30 +224,30 @@ function form.start ( v)
 	local method = v.method or "get"
 	return ( string.format (
 			'<form %s%s%s>',
-			nv_pair ( "class", html_escape(v.class) ), 
-			nv_pair ( "method", html_escape(v.method) ), 
-			nv_pair (	"action", html_escape(v.action) )
+			nv_pair ( "class", mymodule.html_escape(v.class) ), 
+			nv_pair ( "method", mymodule.html_escape(v.method) ), 
+			nv_pair (	"action", mymodule.html_escape(v.action) )
 		) )
 end
 	
-function form.stop ( )
+function mymodule.form.stop ( )
 	return ("</form>")
 end
 
 -- For "h1, h2, p," etc 
 -- WARNING - Text is printed verbatim - you may want to
--- wrap the text in html_escape
-function entity (tag, text, class, id)
+-- wrap the text in mymodule.html_escape
+function mymodule.entity (tag, text, class, id)
 	return ( string.format (
 			"<%s%s%s>%s</%s>",
-			html_escape(tag),
+			mymodule.html_escape(tag),
 			nv_pair ("class", class),
-			nv_pair("id", id), html_escape(text), html_escape(tag))
+			nv_pair("id", id), mymodule.html_escape(text), mymodule.html_escape(tag))
 		)
 end
 	 
 
-function link ( v ) 
+function mymodule.link ( v ) 
 	if ( v.value == nil ) then
 		return nil
 	end
@@ -256,5 +256,7 @@ function link ( v )
 		str = str .. nv_pair ( k, v[k] )
 	end
 
-	return ( "<a " .. str .. ">" .. html_escape(v.label) .. "</a>" )
+	return ( "<a " .. str .. ">" .. mymodule.html_escape(v.label) .. "</a>" )
 end
+
+return mymodule

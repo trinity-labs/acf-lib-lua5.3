@@ -1,4 +1,4 @@
-module(..., package.seeall)
+local mymodule = {}
 
 subprocess = require("subprocess")
 
@@ -24,10 +24,10 @@ end
 export.databaseconnect = function(dbobject)
 	if not dbobject.con then
 		-- create environment object
-		if dbobject.engine == engine.postgresql then
+		if dbobject.engine == mymodule.engine.postgresql then
 			luasql = require("luasql.postgres")
 			dbobject.env = assert (luasql.postgres())
-		elseif dbobject.engine == engine.sqlite3 then
+		elseif dbobject.engine == mymodule.engine.sqlite3 then
 			luasql = require("luasql.sqlite3")
 			dbobject.env = assert (luasql.sqlite3())
 		else
@@ -64,9 +64,9 @@ export.runsqlcommand = function(dbobject, sql, transaction)
 	if not res and err then
 		-- Catch the error to see if it's caused by lack of table
 		local table
-		if dbobject.engine == engine.postgresql then
+		if dbobject.engine == mymodule.engine.postgresql then
 			table = string.match(err, "relation \"(%S+)\" does not exist")
-		elseif dbobject.engine == engine.sqlite3 then
+		elseif dbobject.engine == mymodule.engine.sqlite3 then
 			table = string.match(err, "LuaSQL: no such table: (%S+)")
 		end
 		if table and dbobject.table_creation_scripts[table] then
@@ -105,9 +105,9 @@ export.getselectresponse = function(dbobject, sql, transaction)
 	if not res and err then
 		-- Catch the error to see if it's caused by lack of table
 		local table
-		if dbobject.engine == engine.postgresql then
+		if dbobject.engine == mymodule.engine.postgresql then
 			table = string.match(err, "relation \"(%S+)\" does not exist")
-		elseif dbobject.engine == engine.sqlite3 then
+		elseif dbobject.engine == mymodule.engine.sqlite3 then
 			table = string.match(err, "LuaSQL: no such table: (%S+)")
 		end
 		if table and dbobject.table_creation_scripts[table] then
@@ -125,7 +125,7 @@ end
 
 export.listtables = function(dbobject)
 	local result = {}
-	if dbobject.engine == engine.postgresql then
+	if dbobject.engine == mymodule.engine.postgresql then
 		local tab = dbobject.getselectresponse("SELECT tablename FROM pg_tables WHERE tablename !~* 'pg_*' ORDER BY tablename ASC")
 		for i,t in ipairs(tab) do
 			result[#result+1] = t.tablename
@@ -139,7 +139,7 @@ end
 
 export.listcolumns = function(dbobject, table)
 	local result = {}
-	if dbobject.engine == engine.postgresql then
+	if dbobject.engine == mymodule.engine.postgresql then
 		local col = dbobject.getselectresponse("SELECT a.attname AS field FROM pg_class c, pg_attribute a, pg_type t WHERE c.relname = '"..dbobject.escape(table).."' AND a.attnum > 0 AND a.attrelid = c.oid AND a.atttypid = t.oid ORDER BY a.attnum")
 		for i,c in ipairs(col) do
 			result[#result+1] = c.field
@@ -150,7 +150,7 @@ end
 
 export.listdatabases = function(dbobject)
 	local result = {}
-	if dbobject.engine == engine.postgresql then
+	if dbobject.engine == mymodule.engine.postgresql then
 		local cmd = {"psql", "-U", "postgres", "-lt"}
 		if dbobject.host then
 			cmd[#cmd+1] = "-h"
@@ -178,15 +178,17 @@ end
 -- ################################################################################
 -- PUBLIC FUNCTIONS / DEFINITIONS
 
-engine = {
+mymodule.engine = {
 ["postgresql"] = 1,
 ["sqlite3"] = 2,
 }
 
-create = function(engine, database, user, password, host, port)
+mymodule.create = function(engine, database, user, password, host, port)
 	local dbobject = {engine=engine, database=database, user=user, password=password, host=host, port=port}
 	for n,f in pairs(export) do
 		dbobject[n] = function(...) return f(dbobject, ...) end
 	end
 	return dbobject
 end
+
+return mymodule

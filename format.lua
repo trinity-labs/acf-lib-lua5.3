@@ -3,30 +3,30 @@
 	try to keep non input specific
 ]]--
 
-module (..., package.seeall)
+local mymodule = {}
 
 -- find all return characters and removes them, may get this from a browser
 -- that is why didn't do file specific
 
-function dostounix ( str )
+function mymodule.dostounix ( str )
 	local data = string.gsub(str, "\r", "")
 	return data
 end
 
 -- Escape Lua magic characters
-function escapemagiccharacters ( str )
+function mymodule.escapemagiccharacters ( str )
 	return (string.gsub(str or "", "[%(%)%.%%%+%-%*%?%[%]%^%$]", "%%%1"))
 end
 
 -- Escape shell special characters
-function escapespecialcharacters ( str )
+function mymodule.escapespecialcharacters ( str )
 	return (string.gsub(str or "", "[~`#%$&%*%(%)\\|%[%]{};\'\"<>/\n\r]", "\\%1"))
 end
 
 -- search and remove all blank and commented lines from a string or table of lines
 -- returns a table to iterate over without the blank or commented lines
 
-function parse_lines ( input, comment )
+function mymodule.parse_lines ( input, comment )
 	local lines = {}
 	comment = comment or "#"
 
@@ -53,7 +53,7 @@ end
 -- parse the lines for words, looking for quotes and removing comments
 -- returns a table with an array of words for each line
 
-function parse_linesandwords ( input, comment )
+function mymodule.parse_linesandwords ( input, comment )
 	local lines = {}
 	local linenum = 0
 	comment = comment or "#"
@@ -96,9 +96,9 @@ end
 
 -- returns a table with label value pairs
 
-function parse_configfile( input, comment )
+function mymodule.parse_configfile( input, comment )
 	local config = {}
-	local lines = parse_linesandwords(input, comment)
+	local lines = mymodule.parse_linesandwords(input, comment)
 
 	for i,linetable in ipairs(lines) do
 		config[linetable[1]] = table.concat(linetable, " ", 2) or ""
@@ -109,7 +109,7 @@ end
 -- search and replace through a table
 -- string is easy string.gsub(string, find, replace)
 
-function search_replace (input, find, replace)
+function mymodule.search_replace (input, find, replace)
 	local lines = {}
 	for i,line in ipairs(input) do
 		lines[#lines + 1] = string.gsub(line, find, replace)
@@ -124,7 +124,7 @@ end
 -- say want all the _OPTS from a file format.search_for_lines (fs.read_file("/etc/conf.d/cron"), "OPT")
 -- if want to avoid commented lines, call parse_lines first
 
-function search_for_lines (input, find)
+function mymodule.search_for_lines (input, find)
 	local lines = {}
 
 	function findfn(line)
@@ -147,7 +147,7 @@ function search_for_lines (input, find)
 end
 
 --string format function to capitalize the beginging of each word. 
-function cap_begin_word ( str )
+function mymodule.cap_begin_word ( str )
 	--first need to do the first word
 	local data = string.gsub(str, "^%l", string.upper)
 	--word is any space cause no <> regex
@@ -161,7 +161,7 @@ end
 
 -- This code comes from http://lua-users.org/wiki/SplitJoin
 -- example: format.string_to_table( "Anna, Bob, Charlie,Dolores", ",%s*")
-function string_to_table ( text, delimiter)
+function mymodule.string_to_table ( text, delimiter)
 	local list = {}
 	if text then
 		-- this would result in endless loops
@@ -190,7 +190,7 @@ end
 
 -- Takes a str and expands any ${...} constructs with the Lua variable
 -- ex: a="foo"; print(expand_bash_syntax_vars("a=${a}) - > "a=foo"
-expand_bash_syntax_vars = function (str)
+mymodule.expand_bash_syntax_vars = function (str)
 	local deref = function (f)
 		local v = getfenv(3) -- get the upstream global env
 		for w in string.gfind(f, "[%w_]+") do
@@ -202,7 +202,7 @@ expand_bash_syntax_vars = function (str)
 	for w in string.gmatch (str, "${[^}]*}" ) do
 		local rvar = string.sub(w,3,-2)
 		local rval = ( deref(rvar) or "nil" )
-		str = string.gsub (str, w, escapespecialcharacters(rval))
+		str = string.gsub (str, w, mymodule.escapespecialcharacters(rval))
 	end
 	
 	return (str)
@@ -211,7 +211,7 @@ end
 -- Removes the linenum line from str and replaces it with line.
 -- Do nothing if doesn't exist
 -- Set line to nil to remove the line
-function replace_line(str, linenum, line)
+function mymodule.replace_line(str, linenum, line)
 	-- Split the str to remove the line
 	local startchar, endchar = string.match(str, "^" .. string.rep("[^\n]*\n", linenum-1) .. "()[^\n]*\n?()")
 	if startchar and endchar then
@@ -227,7 +227,7 @@ function replace_line(str, linenum, line)
 end
 
 -- Inserts the line into the str after the linenum (or at the end)
-function insert_line(str, linenum, line)
+function mymodule.insert_line(str, linenum, line)
 	-- Split the str to remove the line
 	local startchar = string.match(str, "^" .. string.rep("[^\n]*\n", linenum) .. "()")
 	local lines = {}
@@ -244,7 +244,7 @@ function insert_line(str, linenum, line)
 	return str
 end
 
-function get_line(str, linenum)
+function mymodule.get_line(str, linenum)
 	-- Split the str to remove the line
 	local startchar, endchar = string.match(str, "^" .. string.rep("[^\n]*\n", linenum-1) .. "()[^\n]*()")
 	local line
@@ -255,7 +255,7 @@ function get_line(str, linenum)
 end
 
 -- Search the option string for separate options (-x or --xyz) and put them in a table
-function opts_to_table ( optstring, filter )
+function mymodule.opts_to_table ( optstring, filter )
 	local optsparams
 	if optstring then
 		local optstr = optstring .. " "
@@ -271,7 +271,7 @@ function opts_to_table ( optstring, filter )
 end
 
 -- Go through an options table and create the option string
-function table_to_opts ( optsparams )
+function mymodule.table_to_opts ( optsparams )
 	local optstring = {}
 	for opt,val in pairs(optsparams) do
 		optstring[#optstring + 1] = opt
@@ -296,7 +296,7 @@ end
 -- Try not to touch anything but the value we're interested in (although will combine multi-line into one)
 -- If the search_section is not found, we'll add it at the end of the string
 -- If the search_name is not found, we'll add it at the end of the section
-function update_ini_file (file, search_section, search_name, value)
+function mymodule.update_ini_file (file, search_section, search_name, value)
 	if not file or not search_name or search_name == "" then
 		return file, false
 	end
@@ -368,7 +368,7 @@ end
 -- Parse string for name=value pairs, returned in a table
 -- If search_section is defined, only report values in matching section
 -- If search_name is defined, only report matching name (possibly in multiple sections)
-function parse_ini_file (file, search_section, search_name)
+function mymodule.parse_ini_file (file, search_section, search_name)
 	if not file or file == "" then
 		return nil
 	end
@@ -420,7 +420,7 @@ function parse_ini_file (file, search_section, search_name)
 	return opts
 end
 
-function get_ini_section (file, search_section)
+function mymodule.get_ini_section (file, search_section)
 	if not file then
 		return nil
 	end
@@ -441,7 +441,7 @@ function get_ini_section (file, search_section)
 	return table.concat(sectionlines, "\n")
 end
 
-function set_ini_section (file, search_section, section_content)
+function mymodule.set_ini_section (file, search_section, section_content)
 	if not file then
 		return file, false
 	end
@@ -488,12 +488,12 @@ end
 -- the file parameter can be a string or structure returned by parse_ini_file
 -- beginning and ending quotes are removed
 -- returns value or "" if not found
-function get_ini_entry (file, section, value)
+function mymodule.get_ini_entry (file, section, value)
 	local opts = file
 	if not file or not value then
 		return nil
 	elseif type(file) == "string" then
-		opts = parse_ini_file(file)
+		opts = mymodule.parse_ini_file(file)
 	end
 	section = section or ""
 	local result
@@ -510,10 +510,12 @@ function get_ini_entry (file, section, value)
 	end
 	while string.find(result, "%$[%w_]+") do
 		local sub = string.match(result, "%$[%w_]+")
-		result = string.gsub(result, escapemagiccharacters(sub), get_ini_entry(opts, section, sub))
+		result = string.gsub(result, mymodule.escapemagiccharacters(sub), mymodule.get_ini_entry(opts, section, sub))
 	end
 	if string.find(result, '^"') and string.find(result, '"$') then
 		result = string.sub(result, 2, -2)
 	end
 	return result
 end
+
+return mymodule

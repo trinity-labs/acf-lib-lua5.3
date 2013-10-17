@@ -1,5 +1,5 @@
 
-module(..., package.seeall)
+local mymodule = {}
 
 posix = require("posix")
 fs = require("acf.fs")
@@ -7,7 +7,7 @@ format = require("acf.format")
 apk = require("acf.apk")
 subprocess = require("subprocess")
 
-function package_version(packagename)
+function mymodule.package_version(packagename)
 	local result = apk.version(packagename)
 	local errtxt
 	if not result then
@@ -16,7 +16,7 @@ function package_version(packagename)
 	return result,errtxt
 end
 
-function process_autostart(servicename)
+function mymodule.process_autostart(servicename)
 	local result
 	local errtxt = "Not programmed to autostart"
 	local code, cmdresult = subprocess.call_capture({"rc-update", "show"})
@@ -37,7 +37,7 @@ function process_autostart(servicename)
 	return result,errtxt
 end
 
-function read_initrunlevels()
+function mymodule.read_initrunlevels()
 	local config = {}
 	local code, cmdresult = subprocess.call_capture({"rc-update", "show", "-v"})
 	for line in string.gmatch(cmdresult, "([^\n]*)\n?") do
@@ -55,7 +55,7 @@ function read_initrunlevels()
 	return config
 end
 
-function add_runlevels(servicename, runlevels)
+function mymodule.add_runlevels(servicename, runlevels)
 	local cmdresult,cmderrors
 	if not servicename then
 		cmderrors = "Invalid service name"
@@ -78,7 +78,7 @@ function add_runlevels(servicename, runlevels)
 	return cmdresult,cmderrors
 end
 
-function delete_runlevels(servicename, runlevels)
+function mymodule.delete_runlevels(servicename, runlevels)
 	local cmdresult,cmderrors
 	if not servicename then
 		cmderrors = "Invalid service name"
@@ -101,7 +101,7 @@ function delete_runlevels(servicename, runlevels)
 	return cmdresult,cmderrors
 end
 
-function daemoncontrol (process, action)
+function mymodule.daemoncontrol (process, action)
 	local cmdresult = ""
 	local cmderrors
 	if not process then
@@ -120,14 +120,14 @@ function daemoncontrol (process, action)
 	return cmdresult,cmderrors
 end
 
-function daemon_actions (process)
+function mymodule.daemon_actions (process)
 	local actions = {"status", "start", "stop", "restart", "describe", "zap"}
 	local reverse = {}
 	for i,a in ipairs(actions) do
 		reverse[a] = i
 	end
 	local description
-	local res, err = daemoncontrol(process, "describe")
+	local res, err = mymodule.daemoncontrol(process, "describe")
 	if err then
 		return nil, err
 	else
@@ -220,7 +220,7 @@ local function has_pidfile(name)
 	return pid
 end
 
-function pidof(name)
+function mymodule.pidof(name)
 	local pids = {has_pidfile(name)}
 	local i, j
 
@@ -236,3 +236,4 @@ function pidof(name)
 	return pids
 end
 
+return mymodule
