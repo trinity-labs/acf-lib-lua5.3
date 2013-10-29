@@ -74,7 +74,8 @@ end
 	etc.
 ]]--
 
-local generic_input = function ( field_type, v )
+local generic_input
+generic_input = function ( field_type, v )
 	if type(v.value) == "table" then
 		ret = {}
 		local vals = v.value
