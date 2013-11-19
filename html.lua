@@ -79,11 +79,14 @@ generic_input = function ( field_type, v )
 	if type(v.value) == "table" then
 		ret = {}
 		local vals = v.value
+		local name = v.name
 		for n, val in ipairs(vals) do
 			v.value = val
+			v.name = name.."."..n
 			table.insert(ret, generic_input(field_type, v))
 		end
 		v.value = vals
+		v.name = name
 		return table.concat(ret)
 	end
 	if ( field_type == nil ) then 
