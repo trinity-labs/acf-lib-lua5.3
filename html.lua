@@ -62,6 +62,14 @@ local nv_pair = function ( name, value)
 end
 
 
+local boolean_attribute = function ( name, value )
+	if ( name and value ) then
+		return name
+	else
+		return ""
+	end
+end
+
 --[[
 	each of these functions take a table that has an associative array of 
 	the values we might care about:
@@ -98,14 +106,16 @@ generic_input = function ( field_type, v )
 	for i,k in ipairs ( {
 			"name", "size", "checked", "maxlength", 
 			"value", "length", "id", "src",
-			"align", "alt", "contenteditable", "readonly", 
+			"align", "alt", "contenteditable",
 			"tabindex", "accesskey", "onfocus", "onblur", "title"
 			} ) do
 		str = str .. nv_pair ( k, v[k] )
 	end
 
-	if ( v.disabled ~= nil ) then 
-		str = str .. " disabled"
+	for i,k in ipairs ( {
+			"readonly", "disabled",  
+			} ) do
+		str = str .. boolean_attribute ( k, v[k] )
 	end
 
 	return ( str .. ">" )
@@ -126,9 +136,14 @@ mymodule.form.longtext = function ( v )
 	for i,k in ipairs ( {
 				"name", "rows", "cols",
 				"class", "id", "tabindex", "accesskey", 
-				"onfocus", "onblur", "readonly", "title"
+				"onfocus", "onblur", "title"
 			} ) do
 		str = str .. nv_pair ( k, v[k] )
+	end
+	for i,k in ipairs ( {
+			"readonly", "disabled",  
+			} ) do
+		str = str .. boolean_attribute ( k, v[k] )
 	end
 	str = str .. nv_pair (nil, v.disabled)
 	return ( str .. ">" .. mymodule.html_escape(v.value) .. "</textarea>" )
@@ -154,7 +169,12 @@ function mymodule.form.action (v)
 end
 
 function mymodule.form.file ( v )
-	return generic_input ( "file", v )
+	-- CFE must contain value, but file cannot have value
+	local value = v.value
+	v.value = nil
+	local retval = generic_input ( "file", v )
+	v.value = value
+	return retval
 end
 
 function mymodule.form.image ( v )
@@ -178,9 +198,12 @@ function mymodule.form.select ( v )
 		str = str .. nv_pair ( k, v[k] )
 	end
 	
-	if ( v.disabled ~= nil ) then
-		str = str .. " disabled"
+	for i,k in ipairs ( {
+			"disabled",  
+			} ) do
+		str = str .. boolean_attribute ( k, v[k] )
 	end
+
 	str = str .. ">"
 	-- now the options
 	local reverseval = {}
