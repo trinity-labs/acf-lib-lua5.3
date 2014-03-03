@@ -193,13 +193,13 @@ function mymodule.form.select ( v )
 	for i,k in ipairs ( {
 			"name", "size", "tabindex", "accesskey", 
 			"onfocus", "onblur", "onchange", "id", 
-			"class", "multiple", "title"
+			"class", "title"
 			} ) do
 		str = str .. nv_pair ( k, v[k] )
 	end
 	
 	for i,k in ipairs ( {
-			"disabled",  
+			"disabled", "multiple" 
 			} ) do
 		str = str .. boolean_attribute ( k, v[k] )
 	end
