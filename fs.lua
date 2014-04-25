@@ -217,6 +217,10 @@ end
 function mymodule.stat ( path )
 	local filedetails = posix.stat(path or "")
 	if (filedetails) then
+		filedetails["orig_ctime"] = filedetails["ctime"]
+		filedetails["orig_mtime"] = filedetails["mtime"]
+		filedetails["orig_size"] = filedetails["size"]
+
 		filedetails["ctime"]=os.date("%c", filedetails["ctime"])
 		filedetails["mtime"]=os.date("%c", filedetails["mtime"])
 		filedetails["path"]=path
