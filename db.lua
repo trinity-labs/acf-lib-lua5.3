@@ -126,7 +126,7 @@ end
 export.listtables = function(dbobject)
 	local result = {}
 	if dbobject.engine == mymodule.engine.postgresql then
-		local tab = dbobject.getselectresponse("SELECT tablename FROM pg_tables WHERE tablename !~* 'pg_*' ORDER BY tablename ASC")
+		local tab = dbobject.getselectresponse("SELECT tablename FROM pg_tables WHERE tablename !~* 'pg_*' AND schemaname = 'public' ORDER BY tablename ASC")
 		for i,t in ipairs(tab) do
 			result[#result+1] = t.tablename
 		end
