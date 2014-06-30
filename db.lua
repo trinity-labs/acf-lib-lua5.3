@@ -69,7 +69,7 @@ export.runsqlcommand = function(dbobject, sql, transaction)
 		elseif dbobject.engine == mymodule.engine.sqlite3 then
 			table = string.match(err, "LuaSQL: no such table: (%S+)")
 		end
-		if table and dbobject.table_creation_scripts[table] then
+		if table and dbobject.table_creation_scripts and dbobject.table_creation_scripts[table] then
 			if transaction then assert(dbobject.con:execute("ROLLBACK TO before_command")) end
 			dbobject.runscript(dbobject.table_creation_scripts[table])
 			dbobject.runsqlcommand(sql)
@@ -110,7 +110,7 @@ export.getselectresponse = function(dbobject, sql, transaction)
 		elseif dbobject.engine == mymodule.engine.sqlite3 then
 			table = string.match(err, "LuaSQL: no such table: (%S+)")
 		end
-		if table and dbobject.table_creation_scripts[table] then
+		if table and dbobject.table_creation_scripts and dbobject.table_creation_scripts[table] then
 			if transaction then assert(con:execute("ROLLBACK TO before_select")) end
 			dbobject.runscript(dbobject.table_creation_scripts[table])
 			return dbobject.getselectresponse(sql)
