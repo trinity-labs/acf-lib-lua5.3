@@ -44,6 +44,16 @@ function mymodule.html_escape (text )
 	return (string.gsub (str, '"', "&quot;" ))
 end
 
+-- percent-encode reserved characters according to RFC3986 (except space to '+')
+function mymodule.url_encode ( text )
+	local str = text or ""
+	str = string.gsub (str, "\n", "\r\n")
+	str = string.gsub (str, "([^%w ])",
+		function (c) return string.format ("%%%02X", string.byte(c)) end)
+	str = string.gsub (str, " ", "+")
+	return str    
+end
+
 --  return a name,value pair as a string.  
 local nv_pair = function ( name, value)
 	if ( name == nil ) then
