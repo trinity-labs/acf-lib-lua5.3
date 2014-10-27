@@ -171,6 +171,8 @@ export.listdatabases = function(dbobject)
 				result[#result+1] = table
 			end
 		end
+	else
+		error("Invalid database engine", 0)
 	end
 	return result
 end
