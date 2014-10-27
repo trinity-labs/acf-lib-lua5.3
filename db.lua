@@ -148,6 +148,21 @@ export.listcolumns = function(dbobject, table)
 	return result
 end
 
+export.listkeycolumns = function(dbobject, table)
+	local result = {}
+	if dbobject.engine == mymodule.engine.postgresql then
+		local col = dbobject.getselectresponse("SELECT pg_attribute.attname AS field FROM pg_index, pg_class, pg_attribute WHERE pg_class.oid = '"..dbobject.escape(table).."'::regclass AND indrelid = pg_class.oid AND pg_attribute.attrelid = pg_class.oid AND pg_attribute.attnum = any(pg_index.indkey) AND indisprimary")
+		if nil == next(col) then
+			result = export.listcolumns(dbobject, table)
+		else
+			for i,c in ipairs(col) do
+				result[#result+1] = c.field
+			end
+		end
+	end
+	return result
+end
+
 export.listdatabases = function(dbobject)
 	local result = {}
 	if dbobject.engine == mymodule.engine.postgresql then
