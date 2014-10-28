@@ -167,15 +167,16 @@ export.listdatabases = function(dbobject)
 	local result = {}
 	if dbobject.engine == mymodule.engine.postgresql then
 		local cmd = {"psql", "-U", "postgres", "-lt"}
-		if dbobject.host then
+		if dbobject.host and dbobject.host ~= "" then
 			cmd[#cmd+1] = "-h"
 			cmd[#cmd+1] = dbobject.host
 		end
-		if dbobject.port then
+		if dbobject.port and dbobject.port ~= "" then
 			cmd[#cmd+1] = "-p"
 			cmd[#cmd+1] = dbobject.port
 		end
 		cmd["stderr"]=subprocess.STDOUT
+APP.logevent("calling: "..table.concat(cmd, " "))
 		local code, cmdresult = subprocess.call_capture(cmd)
 		if code ~= 0 then
 			error(cmdresult, 0)
