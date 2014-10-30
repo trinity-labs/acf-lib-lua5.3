@@ -166,7 +166,16 @@ end
 export.listdatabases = function(dbobject)
 	local result = {}
 	if dbobject.engine == mymodule.engine.postgresql then
-		local cmd = {"psql", "-U", "postgres", "-lt"}
+		local cmd = {"psql", "-lt", "-U"}
+		local stdin
+		if dbobject.user and dbobject.user ~= "" then
+			cmd[#cmd+1] = dbobject.user
+		else
+			cmd[#cmd+1] = "postgres"
+		end
+		if dbobject.password and dbobject.password ~= "" then
+			-- Have never seen a need to use password
+		end
 		if dbobject.host and dbobject.host ~= "" then
 			cmd[#cmd+1] = "-h"
 			cmd[#cmd+1] = dbobject.host
@@ -176,7 +185,6 @@ export.listdatabases = function(dbobject)
 			cmd[#cmd+1] = dbobject.port
 		end
 		cmd["stderr"]=subprocess.STDOUT
-APP.logevent("calling: "..table.concat(cmd, " "))
 		local code, cmdresult = subprocess.call_capture(cmd)
 		if code ~= 0 then
 			error(cmdresult, 0)
