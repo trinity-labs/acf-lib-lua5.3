@@ -138,14 +138,21 @@ export.listtables = function(dbobject)
 end
 
 export.listcolumns = function(dbobject, table)
-	local result = {}
-	if dbobject.engine == mymodule.engine.postgresql then
-		local col = dbobject.getselectresponse("SELECT a.attname AS field FROM pg_class c, pg_attribute a, pg_type t WHERE c.relname = '"..dbobject.escape(table).."' AND a.attnum > 0 AND a.attrelid = c.oid AND a.atttypid = t.oid ORDER BY a.attnum")
-		for i,c in ipairs(col) do
-			result[#result+1] = c.field
-		end
+	local columns = {}
+	local defaults = {}
+	local nullable = {}
+	-- There is no good way to get default values from pg_attribute, so may as well use information_schema
+--	if dbobject.engine == mymodule.engine.postgresql then
+--		local col = dbobject.getselectresponse("SELECT a.attname AS field, a.attnotnull FROM pg_class c, pg_attribute a, pg_type t WHERE c.relname = '"..dbobject.escape(table).."' AND a.attnum > 0 AND a.attrelid = c.oid AND a.atttypid = t.oid ORDER BY a.attnum")
+
+	local col = dbobject.getselectresponse("SELECT column_name, column_default, is_nullable FROM information_schema.columns WHERE table_name = '"..dbobject.escape(table).."' ORDER BY ordinal_position")
+	for i,c in ipairs(col) do
+		columns[#columns+1] = c.column_name
+		defaults[c.column_name] = c.column_default
+		nullable[c.column_name] = c.is_nullable == "YES"
 	end
-	return result
+
+	return columns, defaults, nullable
 end
 
 export.listkeycolumns = function(dbobject, table)
