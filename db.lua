@@ -27,6 +27,9 @@ export.databaseconnect = function(dbobject)
 		if dbobject.engine == mymodule.engine.postgresql then
 			luasql = require("luasql.postgres")
 			dbobject.env = assert (luasql.postgres())
+		elseif dbobject.engine == mymodule.engine.mysql then
+			luasql = require("luasql.mysql")
+			dbobject.env = assert (luasql.mysql())
 		elseif dbobject.engine == mymodule.engine.sqlite3 then
 			luasql = require("luasql.sqlite3")
 			dbobject.env = assert (luasql.sqlite3())
@@ -131,8 +134,10 @@ export.listtables = function(dbobject)
 			result[#result+1] = t.tablename
 		end
 	else
-		-- untested
-		result = dbobject.con:tables()
+		local tab = dbobject.getselectresponse("SELECT table_name FROM information_schema.tables WHERE table_type = 'BASE TABLE' AND table_schema NOT IN ('pg_catalog', 'information_schema')")
+		for i,t in ipairs(tab) do
+			result[#result+1] = t.table_name
+		end
 	end
 	return result
 end
@@ -202,6 +207,35 @@ export.listdatabases = function(dbobject)
 				result[#result+1] = table
 			end
 		end
+	elseif dbobject.engine == mymodule.engine.mysql then
+		local cmd = {"mysql", "-Bse",  "show databases", "-u"}
+		if dbobject.user and dbobject.user ~= "" then
+			cmd[#cmd+1] = dbobject.user
+		else
+			cmd[#cmd+1] = "root"
+		end
+		if dbobject.password and dbobject.password ~= "" then
+			cmd[#cmd+1] = "-p"..dbobject.password
+		end
+		if dbobject.host and dbobject.host ~= "" then
+			cmd[#cmd+1] = "-h"
+			cmd[#cmd+1] = dbobject.host
+		end
+		if dbobject.port and dbobject.port ~= "" then
+			cmd[#cmd+1] = "-P"
+			cmd[#cmd+1] = dbobject.port
+		end
+		cmd["stderr"]=subprocess.STDOUT
+		local code, cmdresult = subprocess.call_capture(cmd)
+		if code ~= 0 then
+			error(cmdresult, 0)
+		end
+		for line in string.gmatch(cmdresult or "", "[^\n]+") do
+			local table = string.match(line, "%s*([^ |]*)")
+			if table and table ~= "" then
+				result[#result+1] = table
+			end
+		end
 	else
 		error("Invalid database engine", 0)
 	end
@@ -213,7 +247,8 @@ end
 
 mymodule.engine = {
 ["postgresql"] = 1,
-["sqlite3"] = 2,
+["mysql"] = 2,
+["sqlite3"] = 3,
 }
 
 mymodule.create = function(engine, database, user, password, host, port)
