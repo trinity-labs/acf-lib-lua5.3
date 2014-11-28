@@ -133,6 +133,11 @@ export.listtables = function(dbobject)
 		for i,t in ipairs(tab) do
 			result[#result+1] = t.tablename
 		end
+	elseif dbobject.engine == mymodule.engine.sqlite3 then
+		local tab = dbobject.getselectresponse("SELECT name FROM sqlite_master WHERE type = 'table'")
+		for i,t in ipairs(tab) do
+			result[#result+1] = t.name
+		end
 	else
 		local tab = dbobject.getselectresponse("SELECT table_name FROM information_schema.tables WHERE table_type = 'BASE TABLE' AND table_schema NOT IN ('pg_catalog', 'information_schema')")
 		for i,t in ipairs(tab) do
@@ -150,11 +155,20 @@ export.listcolumns = function(dbobject, table)
 --	if dbobject.engine == mymodule.engine.postgresql then
 --		local col = dbobject.getselectresponse("SELECT a.attname AS field, a.attnotnull FROM pg_class c, pg_attribute a, pg_type t WHERE c.relname = '"..dbobject.escape(table).."' AND a.attnum > 0 AND a.attrelid = c.oid AND a.atttypid = t.oid ORDER BY a.attnum")
 
-	local col = dbobject.getselectresponse("SELECT column_name, column_default, is_nullable FROM information_schema.columns WHERE table_name = '"..dbobject.escape(table).."' ORDER BY ordinal_position")
-	for i,c in ipairs(col) do
-		columns[#columns+1] = c.column_name
-		defaults[c.column_name] = c.column_default
-		nullable[c.column_name] = c.is_nullable == "YES"
+	if dbobject.engine == mymodule.engine.sqlite3 then
+		local col = dbobject.getselectresponse("pragma table_info("..dbobject.escape(table)..")")
+		for i,c in ipairs(col) do
+			columns[#columns+1] = c.name
+			defaults[c.name] = c.dflt_value
+			nullable[c.name] = c.notnull ~= 1
+		end
+	else
+		local col = dbobject.getselectresponse("SELECT column_name, column_default, is_nullable FROM information_schema.columns WHERE table_name = '"..dbobject.escape(table).."' ORDER BY ordinal_position")
+		for i,c in ipairs(col) do
+			columns[#columns+1] = c.column_name
+			defaults[c.column_name] = c.column_default
+			nullable[c.column_name] = c.is_nullable == "YES"
+		end
 	end
 
 	return columns, defaults, nullable
@@ -171,6 +185,19 @@ export.listkeycolumns = function(dbobject, table)
 				result[#result+1] = c.field
 			end
 		end
+	elseif dbobject.engine == mymodule.engine.sqlite3 then
+		local col = dbobject.getselectresponse("pragma table_info("..dbobject.escape(table)..")")
+		for i,c in ipairs(col) do
+			if c.pk == 1 then
+				result[#result+1] = c.name
+			end
+		end
+		if #result == 0 then
+			for i,c in ipairs(col) do
+				result[#result+1] = c.name
+			end
+		end
+	else
 	end
 	return result
 end
@@ -236,6 +263,7 @@ export.listdatabases = function(dbobject)
 				result[#result+1] = table
 			end
 		end
+	elseif dbobject.engine == mymodule.engine.sqlite3 then
 	else
 		error("Invalid database engine", 0)
 	end
