@@ -201,7 +201,13 @@ export.listkeycolumns = function(dbobject, table)
 				result[#result+1] = c.name
 			end
 		end
-	else
+	elseif dbobject.engine == mymodule.engine.mysql then
+		local col = dbobject.getselectresponse("SELECT column_name, column_key FROM information_schema.columns WHERE table_name = '"..dbobject.escape(table).."' ORDER BY ordinal_position")
+		for i,c in ipairs(col) do
+			if c.column_key == "PRI" then
+				result[#result+1] = c.column_name
+			end
+		end
 	end
 	return result
 end
