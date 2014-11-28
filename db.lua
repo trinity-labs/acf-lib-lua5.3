@@ -69,6 +69,8 @@ export.runsqlcommand = function(dbobject, sql, transaction)
 		local table
 		if dbobject.engine == mymodule.engine.postgresql then
 			table = string.match(err, "relation \"(%S+)\" does not exist")
+		elseif dbobject.engine == mymodule.engine.mysql then
+			table = string.match(err, "Table '[^.]*%.(%S+)' doesn't exist")
 		elseif dbobject.engine == mymodule.engine.sqlite3 then
 			table = string.match(err, "LuaSQL: no such table: (%S+)")
 		end
@@ -110,6 +112,8 @@ export.getselectresponse = function(dbobject, sql, transaction)
 		local table
 		if dbobject.engine == mymodule.engine.postgresql then
 			table = string.match(err, "relation \"(%S+)\" does not exist")
+		elseif dbobject.engine == mymodule.engine.mysql then
+			table = string.match(err, "Table '[^.]*%.(%S+)' doesn't exist")
 		elseif dbobject.engine == mymodule.engine.sqlite3 then
 			table = string.match(err, "LuaSQL: no such table: (%S+)")
 		end
