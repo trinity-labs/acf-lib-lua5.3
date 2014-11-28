@@ -96,7 +96,10 @@ export.getselectresponse = function(dbobject, sql, transaction)
 	if transaction then assert(dbobject.con:execute("SAVEPOINT before_select")) end
         local res, err = pcall(function()
 		local cur = assert (dbobject.con:execute(sql))
-		local row = cur:fetch ({}, "a")
+		local row
+		if type(cur) == "userdata" then
+			row = cur:fetch ({}, "a")
+		end
 		while row do
 			local tmp = {}
 			for name,val in pairs(row) do
@@ -105,7 +108,9 @@ export.getselectresponse = function(dbobject, sql, transaction)
 			retval[#retval + 1] = tmp
 			row = cur:fetch (row, "a")
 		end
-		cur:close()
+		if type(cur) == "userdata" then
+			cur:close()
+		end
 	end)
 	if not res and err then
 		-- Catch the error to see if it's caused by lack of table
