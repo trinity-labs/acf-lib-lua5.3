@@ -1,6 +1,6 @@
 APP_NAME=lib
 PACKAGE=acf-$(APP_NAME)
-VERSION=0.7.0
+VERSION=0.7.1
 
 APP_DIST=\
 	*.lua\
