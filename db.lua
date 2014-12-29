@@ -297,7 +297,7 @@ mymodule.engine = {
 mymodule.create = function(engine, database, user, password, host, port)
 	local dbobject = {engine=engine, database=database, user=user, password=password, host=host, port=port}
 	for n,f in pairs(export) do
-		dbobject[n] = function(...) return f(dbobject, unpack(arg)) end
+		dbobject[n] = function(...) return f(dbobject, ...) end
 	end
 	return dbobject
 end
