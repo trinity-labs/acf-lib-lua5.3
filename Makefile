@@ -14,7 +14,7 @@ TAR=tar
 
 P=$(PACKAGE)-$(VERSION)
 tarball=$(P).tar.bz2
-install_dir=$(DESTDIR)/usr/share/lua/5.1/acf
+install_dir=$(DESTDIR)/$(luadir)
 
 all:
 clean:
@@ -42,5 +42,7 @@ dist-install: $(tarball)
 	$(TAR) -jxf $(tarball)
 	$(MAKE) -C $(P) install DESTDIR=$(DESTDIR)
 	rm -rf $(P)
+
+include config.mk
 
 .PHONY: all clean dist install dist-install
