@@ -199,6 +199,8 @@ function mymodule.find_files_as_array ( what, where, follow, t )
 		table.insert (t, where )
 	end
 
+	table.sort(t)
+
 	return (t)
 end
 
