@@ -74,7 +74,7 @@ end
 
 local boolean_attribute = function ( name, value )
 	if ( name and value ) then
-		return name
+		return name.." "
 	else
 		return ""
 	end
