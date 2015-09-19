@@ -156,31 +156,73 @@ export.listtables = function(dbobject)
 	return result
 end
 
+export.getcolumndata = function(dbobject, table)
+	local columns = {}
+	-- There is no good way to get default values from pg_attribute, so may as well use information_schema
+	local foundkey = false
+	if dbobject.engine == mymodule.engine.postgresql then
+		local key = dbobject.getselectresponse("SELECT pg_attribute.attname AS field FROM pg_index, pg_class, pg_attribute WHERE pg_class.oid = '"..dbobject.escape(table).."'::regclass AND indrelid = pg_class.oid AND pg_attribute.attrelid = pg_class.oid AND pg_attribute.attnum = any(pg_index.indkey) AND indisprimary")
+		local reversekeys = {}
+		if nil ~= next(key) then
+			for i,k in ipairs(key) do
+				reversekeys[k.field] = true
+			end
+		end
+		local col = dbobject.getselectresponse("SELECT column_name, column_default, is_nullable, data_type FROM information_schema.columns WHERE table_name = '"..dbobject.escape(table).."' ORDER BY ordinal_position")
+		for i,c in ipairs(col) do
+			columns[#columns+1] = {name=c.column_name, default=c.column_default, nullable=(c.is_nullable == "YES"), type=c.data_type, key=(reversekeys[c.column_name] == true)}
+			if columns[#columns].key then foundkey = true end
+		end
+	elseif dbobject.engine == mymodule.engine.sqlite3 then
+		local col = dbobject.getselectresponse("pragma table_info("..dbobject.escape(table)..")")
+		for i,c in ipairs(col) do
+			columns[#columns+1] = {name=c.name, default=c.dflt_value, nullable=(c.notnull ~= 1), type=c.type, key=(c.pk == 1)}
+			if columns[#columns].key then foundkey = true end
+		end
+	else
+		-- column_key is a mysql extension to information_schema.columns
+		local col = dbobject.getselectresponse("SELECT column_name, column_default, is_nullable, data_type, column_key FROM information_schema.columns WHERE table_name = '"..dbobject.escape(table).."' ORDER BY ordinal_position")
+		for i,c in ipairs(col) do
+			columns[#columns+1] = {name=c.column_name, default=c.column_default, nullable=(c.is_nullable == "YES"), type=c.data_type, key=(c.column_key == "PRI")}
+			if columns[#columns].key then foundkey = true end
+		end
+	end
+	if not foundkey then
+		for i,c in ipairs(columns) do
+			c.key = true
+		end
+	end
+
+	return columns
+end
+
 export.listcolumns = function(dbobject, table)
 	local columns = {}
 	local defaults = {}
 	local nullable = {}
+	local data_type = {}
 	-- There is no good way to get default values from pg_attribute, so may as well use information_schema
 --	if dbobject.engine == mymodule.engine.postgresql then
 --		local col = dbobject.getselectresponse("SELECT a.attname AS field, a.attnotnull FROM pg_class c, pg_attribute a, pg_type t WHERE c.relname = '"..dbobject.escape(table).."' AND a.attnum > 0 AND a.attrelid = c.oid AND a.atttypid = t.oid ORDER BY a.attnum")
-
 	if dbobject.engine == mymodule.engine.sqlite3 then
 		local col = dbobject.getselectresponse("pragma table_info("..dbobject.escape(table)..")")
 		for i,c in ipairs(col) do
 			columns[#columns+1] = c.name
 			defaults[c.name] = c.dflt_value
 			nullable[c.name] = c.notnull ~= 1
+			data_type[c.name] = c.type
 		end
 	else
-		local col = dbobject.getselectresponse("SELECT column_name, column_default, is_nullable FROM information_schema.columns WHERE table_name = '"..dbobject.escape(table).."' ORDER BY ordinal_position")
+		local col = dbobject.getselectresponse("SELECT column_name, column_default, is_nullable, data_type FROM information_schema.columns WHERE table_name = '"..dbobject.escape(table).."' ORDER BY ordinal_position")
 		for i,c in ipairs(col) do
 			columns[#columns+1] = c.column_name
 			defaults[c.column_name] = c.column_default
 			nullable[c.column_name] = c.is_nullable == "YES"
+			data_type[c.column_name] = c.data_type
 		end
 	end
 
-	return columns, defaults, nullable
+	return columns, defaults, nullable, data_type
 end
 
 export.listkeycolumns = function(dbobject, table)
@@ -207,6 +249,7 @@ export.listkeycolumns = function(dbobject, table)
 			end
 		end
 	elseif dbobject.engine == mymodule.engine.mysql then
+		-- column_key is a mysql extension to information_schema.columns
 		local col = dbobject.getselectresponse("SELECT column_name, column_key FROM information_schema.columns WHERE table_name = '"..dbobject.escape(table).."' ORDER BY ordinal_position")
 		for i,c in ipairs(col) do
 			if c.column_key == "PRI" then
