@@ -148,7 +148,7 @@ export.listtables = function(dbobject)
 			result[#result+1] = t.name
 		end
 	else
-		local tab = dbobject.getselectresponse("SELECT table_name FROM information_schema.tables WHERE table_type = 'BASE TABLE' AND table_schema NOT IN ('pg_catalog', 'information_schema')")
+		local tab = dbobject.getselectresponse("SELECT table_name FROM information_schema.tables WHERE table_type = 'BASE TABLE' AND table_schema = '"..dbobject.escape(dbobject.database).."'")
 		for i,t in ipairs(tab) do
 			result[#result+1] = t.table_name
 		end
@@ -168,7 +168,7 @@ export.getcolumndata = function(dbobject, table)
 				reversekeys[k.field] = true
 			end
 		end
-		local col = dbobject.getselectresponse("SELECT column_name, column_default, is_nullable, data_type FROM information_schema.columns WHERE table_name = '"..dbobject.escape(table).."' ORDER BY ordinal_position")
+		local col = dbobject.getselectresponse("SELECT column_name, column_default, is_nullable, data_type FROM information_schema.columns WHERE table_name = '"..dbobject.escape(table).."' AND table_schema = 'public' ORDER BY ordinal_position")
 		for i,c in ipairs(col) do
 			columns[#columns+1] = {name=c.column_name, default=c.column_default, nullable=(c.is_nullable == "YES"), type=c.data_type, key=(reversekeys[c.column_name] == true)}
 			if columns[#columns].key then foundkey = true end
@@ -181,7 +181,7 @@ export.getcolumndata = function(dbobject, table)
 		end
 	else
 		-- column_key is a mysql extension to information_schema.columns
-		local col = dbobject.getselectresponse("SELECT column_name, column_default, is_nullable, data_type, column_key FROM information_schema.columns WHERE table_name = '"..dbobject.escape(table).."' ORDER BY ordinal_position")
+		local col = dbobject.getselectresponse("SELECT column_name, column_default, is_nullable, data_type, column_key FROM information_schema.columns WHERE table_name = '"..dbobject.escape(table).."' AND table_schema = '"..dbobject.escape(dbobject.database).."' ORDER BY ordinal_position")
 		for i,c in ipairs(col) do
 			columns[#columns+1] = {name=c.column_name, default=c.column_default, nullable=(c.is_nullable == "YES"), type=c.data_type, key=(c.column_key == "PRI")}
 			if columns[#columns].key then foundkey = true end
@@ -213,7 +213,12 @@ export.listcolumns = function(dbobject, table)
 			data_type[c.name] = c.type
 		end
 	else
-		local col = dbobject.getselectresponse("SELECT column_name, column_default, is_nullable, data_type FROM information_schema.columns WHERE table_name = '"..dbobject.escape(table).."' ORDER BY ordinal_position")
+		local col
+		if dbobject.engine == mymodule.engine.postgresql then
+			col = dbobject.getselectresponse("SELECT column_name, column_default, is_nullable, data_type FROM information_schema.columns WHERE table_name = '"..dbobject.escape(table).."' AND table_schema = 'public' ORDER BY ordinal_position")
+		else
+			col = dbobject.getselectresponse("SELECT column_name, column_default, is_nullable, data_type FROM information_schema.columns WHERE table_name = '"..dbobject.escape(table).."' AND table_schema = '"..dbobject.escape(dbobject.database).."' ORDER BY ordinal_position")
+		end
 		for i,c in ipairs(col) do
 			columns[#columns+1] = c.column_name
 			defaults[c.column_name] = c.column_default
@@ -250,7 +255,7 @@ export.listkeycolumns = function(dbobject, table)
 		end
 	elseif dbobject.engine == mymodule.engine.mysql then
 		-- column_key is a mysql extension to information_schema.columns
-		local col = dbobject.getselectresponse("SELECT column_name, column_key FROM information_schema.columns WHERE table_name = '"..dbobject.escape(table).."' ORDER BY ordinal_position")
+		local col = dbobject.getselectresponse("SELECT column_name, column_key FROM information_schema.columns WHERE table_name = '"..dbobject.escape(table).."' AND table_schema = '"..dbobject.escape(dbobject.database).."' ORDER BY ordinal_position")
 		for i,c in ipairs(col) do
 			if c.column_key == "PRI" then
 				result[#result+1] = c.column_name
