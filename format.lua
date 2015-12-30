@@ -23,6 +23,27 @@ function mymodule.escapespecialcharacters ( str )
 	return (string.gsub(str or "", "[~`#%$&%*%(%)\\|%[%]{};\'\"<>/\n\r]", "\\%1"))
 end
 
+function mymodule.formatfilesize ( size )
+	size = tonumber(size) or 0
+	if ( size > 1073741824 ) then
+		return ((size/1073741824) - (size/1073741824%0.1)) .. "G"
+	elseif ( size > 1048576 ) then
+		return ((size/1048576) - (size/1048576%0.1))  .. "M"
+	elseif ( size > 1024 ) then
+		return ((size/1024) - (size/1024%0.1)) .. "k"
+	else
+		return tostring(size)
+	end
+end
+
+function mymodule.formattime ( time )
+	if tonumber(time) then
+		return os.date("%c", time)
+	else
+		return "---"
+	end
+end
+
 -- search and remove all blank and commented lines from a string or table of lines
 -- returns a table to iterate over without the blank or commented lines
 
