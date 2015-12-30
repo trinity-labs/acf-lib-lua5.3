@@ -55,6 +55,10 @@ export.databasedisconnect = function(dbobject)
 	end
 end
 
+export.isconnected = function(dbobject)
+	return (dbobject.con ~= nil)
+end
+
 export.runscript = function(dbobject, script, transaction)
 	for i,scr in ipairs(script) do
 		dbobject.runsqlcommand(scr, transaction)
