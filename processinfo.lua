@@ -102,7 +102,7 @@ function mymodule.delete_runlevels(servicename, runlevels)
 end
 
 function mymodule.daemoncontrol (process, action)
-	local cmdresult = ""
+	local cmdresult
 	local cmderrors
 	if not process then
 		cmderrors = "Invalid service name"
@@ -114,7 +114,7 @@ function mymodule.daemoncontrol (process, action)
 			code, cmdresult = subprocess.call_capture({"/etc/init.d/" .. process, string.lower(action), stderr=subprocess.STDOUT})
 		end)
 		if not res or err then
-			cmdresult = string.gsub(err or "Unknown failure", ": No such file or directory", "-ash: /etc/init.d/"..process..": not found")
+			cmderrors = err
 		end
 	end
 	return cmdresult,cmderrors
@@ -132,12 +132,20 @@ function mymodule.daemon_actions (process)
 		return nil, err
 	else
 		lines = format.string_to_table(res, "\n")
-		description = string.match(lines[1], "^%s*%*%s*(.*)")
-		for i=2,#lines,1 do
-			local act = string.match(lines[i], "^%s*%*%s*([^:]*)")
-			if act and not reverse[act] then
-				actions[#actions+1] = act
-				reverse[act] = #actions
+		-- Description is last line before first action
+		-- Actions are of the form " * action: description"
+		local found = false
+		for i,l in ipairs(lines) do
+			local line = string.gsub(l, "^%s*%*%s*", "")
+			if string.find(line, "^%S*:") then
+				found = true
+				local act = string.match(line, "^([^:]*)")
+				if act and not reverse[act] then
+					actions[#actions+1] = act
+					reverse[act] = #actions
+				end
+			elseif not found then
+				description = line
 			end
 		end
 	end
