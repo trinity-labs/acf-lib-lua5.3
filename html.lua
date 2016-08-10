@@ -1,4 +1,4 @@
---[[ lowlevel html functions 
+--[[ lowlevel html functions
      Written for Alpine Configuration Framework (ACF) -- see www.alpinelinux.org
      Copyright (C) 2007  Nathan Angelacos
      Licensed under the terms of GPL2
@@ -22,7 +22,7 @@ mymodule.cookie.set = function ( name, value, path )
 	if path == nil then
 		path = "/"
 	end
-	return (string.format('Set-Cookie: %s=%s; path=%s; %s\n', mymodule.html_escape(tostring(name)), 
+	return (string.format('Set-Cookie: %s=%s; path=%s; %s\n', mymodule.html_escape(tostring(name)),
 		mymodule.html_escape(tostring(value)), mymodule.html_escape(path), mymodule.html_escape(expires)))
 end
 
@@ -36,7 +36,7 @@ end
 
 -- escape unsafe html characters
 function mymodule.html_escape (text )
-	text = text or "" 
+	text = text or ""
 	local str = string.gsub (text, "&", "&amp;" )
 	str = string.gsub (str, "<", "&lt;" )
 	str = string.gsub (str, ">", "&gt;" )
@@ -51,19 +51,19 @@ function mymodule.url_encode ( text )
 	str = string.gsub (str, "([^%w ])",
 		function (c) return string.format ("%%%02X", string.byte(c)) end)
 	str = string.gsub (str, " ", "+")
-	return str    
+	return str
 end
 
---  return a name,value pair as a string.  
+--  return a name,value pair as a string.
 local nv_pair = function ( name, value)
 	if ( name == nil ) then
 		return ( value or "" )
 	end
-	
+
 	if ( type(value) == "boolean" ) then
 		value = tostring(value)
 	end
-	
+
 	if ( value == nil ) then
 		return ( "" )
 	else
@@ -81,7 +81,7 @@ local boolean_attribute = function ( name, value )
 end
 
 --[[
-	each of these functions take a table that has an associative array of 
+	each of these functions take a table that has an associative array of
 	the values we might care about:
 
 	value -- this is the value in the form element, or the selected element
@@ -107,14 +107,14 @@ generic_input = function ( field_type, v )
 		v.name = name
 		return table.concat(ret)
 	end
-	if ( field_type == nil ) then 
+	if ( field_type == nil ) then
 		return nil
 	end
-	
+
 	local str = string.format ( '<input class="%s %s" type="%s" ', mymodule.html_escape(v.class), mymodule.html_escape(field_type), mymodule.html_escape(field_type) )
 
 	for i,k in ipairs ( {
-			"name", "size", "checked", "maxlength", 
+			"name", "size", "checked", "maxlength",
 			"value", "length", "id", "src",
 			"align", "alt", "contenteditable",
 			"tabindex", "accesskey", "onfocus", "onblur", "title"
@@ -123,15 +123,15 @@ generic_input = function ( field_type, v )
 	end
 
 	for i,k in ipairs ( {
-			"readonly", "disabled",  
+			"readonly", "disabled",
 			} ) do
 		str = str .. boolean_attribute ( k, v[k] )
 	end
 
 	return ( str .. ">" )
 end
-	
-	
+
+
 --[[ Form functions ]]------------------------------------------------------
 -- These expect something like a cfe to work (see mvc.lua)
 
@@ -145,13 +145,13 @@ mymodule.form.longtext = function ( v )
 	local str = "<textarea"
 	for i,k in ipairs ( {
 				"name", "rows", "cols",
-				"class", "id", "tabindex", "accesskey", 
+				"class", "id", "tabindex", "accesskey",
 				"onfocus", "onblur", "title"
 			} ) do
 		str = str .. nv_pair ( k, v[k] )
 	end
 	for i,k in ipairs ( {
-			"readonly", "disabled",  
+			"readonly", "disabled",
 			} ) do
 		str = str .. boolean_attribute ( k, v[k] )
 	end
@@ -174,7 +174,7 @@ function mymodule.form.submit ( v )
 end
 
 
-function mymodule.form.action (v) 
+function mymodule.form.action (v)
 	return generic_input ("submit", v)
 end
 
@@ -196,20 +196,20 @@ end
 -- v.option is an array of valid options (or an array of value, label)
 -- NOTE use of value and values (plural)
 function mymodule.form.select ( v )
-	if ( v.name == nil ) then 
-		return nil 
+	if ( v.name == nil ) then
+		return nil
 	end
 	local str = "<select"
 	for i,k in ipairs ( {
-			"name", "size", "tabindex", "accesskey", 
-			"onfocus", "onblur", "onchange", "id", 
+			"name", "size", "tabindex", "accesskey",
+			"onfocus", "onblur", "onchange", "id",
 			"class", "title"
 			} ) do
 		str = str .. nv_pair ( k, v[k] )
 	end
-	
+
 	for i,k in ipairs ( {
-			"disabled", "multiple" 
+			"disabled", "multiple"
 			} ) do
 		str = str .. boolean_attribute ( k, v[k] )
 	end
@@ -252,26 +252,26 @@ function mymodule.form.checkbox ( v )
 end
 
 
--- NOTE:  VALUE of a form is a table containing the form elements ... 
+-- NOTE:  VALUE of a form is a table containing the form elements ...
 function mymodule.form.start ( v)
-	if ( v.action == nil ) then 
-		return nil 
+	if ( v.action == nil ) then
+		return nil
 	end
-	
+
 	local method = v.method or "get"
 	return ( string.format (
 			'<form %s%s%s>',
-			nv_pair ( "class", mymodule.html_escape(v.class) ), 
-			nv_pair ( "method", mymodule.html_escape(v.method) ), 
+			nv_pair ( "class", mymodule.html_escape(v.class) ),
+			nv_pair ( "method", mymodule.html_escape(v.method) ),
 			nv_pair (	"action", mymodule.html_escape(v.action) )
 		) )
 end
-	
+
 function mymodule.form.stop ( )
 	return ("</form>")
 end
 
--- For "h1, h2, p," etc 
+-- For "h1, h2, p," etc
 -- WARNING - Text is printed verbatim - you may want to
 -- wrap the text in mymodule.html_escape
 function mymodule.entity (tag, text, class, id)
@@ -282,9 +282,9 @@ function mymodule.entity (tag, text, class, id)
 			nv_pair("id", id), mymodule.html_escape(text), mymodule.html_escape(tag))
 		)
 end
-	 
 
-function mymodule.link ( v ) 
+
+function mymodule.link ( v )
 	if ( v.value == nil ) then
 		return nil
 	end

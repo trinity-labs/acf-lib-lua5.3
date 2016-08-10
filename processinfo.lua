@@ -33,7 +33,7 @@ function mymodule.process_autostart(servicename)
 			end
 			break
 		end
-	end	
+	end
 	return result,errtxt
 end
 
@@ -153,7 +153,7 @@ function mymodule.daemon_actions (process)
 end
 
 -- the following methods are available:
--- /proc/<pid>/stat	the comm field (2nd) field contains name but only up 
+-- /proc/<pid>/stat	the comm field (2nd) field contains name but only up
 --   			to 15 chars. does not resolve links
 --
 -- /proc/<pid>/cmdline	argv[0] contains the command. However if it is a script
@@ -184,7 +184,7 @@ local function is_stat(path, name)
 		p = string.gsub(p, "%).*", "")
 		f:close()
 	end
-	if p ~= nil then	
+	if p ~= nil then
 		if string.len(name) <= 15 and p == name then
 			return true
 		end
@@ -199,7 +199,7 @@ local function is_cmdline(path, name)
 	end
 	local line = f:read()
 	f:close()
-	if line == nil then 
+	if line == nil then
 		return false
 	end
 	local arg0 = string.gsub(line, string.char(0)..".*", "")

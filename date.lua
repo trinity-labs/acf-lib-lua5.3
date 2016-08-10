@@ -1,4 +1,4 @@
---date and time functions 
+--date and time functions
 
 local mymodule = {}
 
@@ -11,9 +11,9 @@ fs = require("acf.fs")
 --print(os.date(date.format))
 mymodule.formats = "%a %b %d %X %Z %Y"
 
-mymodule.months ={ {"January","Jan"},  
-          {"February", "Feb"}, 
-          {"March","Mar"}, 
+mymodule.months ={ {"January","Jan"},
+          {"February", "Feb"},
+          {"March","Mar"},
           {"April", "Apr"},
 	  {"May","May"},
 	  {"June","Jun"},
@@ -25,10 +25,10 @@ mymodule.months ={ {"January","Jan"},
 	  {"December","Dec"}
 	   }
 
-mymodule.revmonths = {["january"] = 1, ["jan"] = 1, 
+mymodule.revmonths = {["january"] = 1, ["jan"] = 1,
 	     ["february"] = 2, ["feb"] = 2,
-	     ["march"] = 3, ["mar"] = 3, 
-	     ["april"] = 4, ["apr"] = 4, 
+	     ["march"] = 3, ["mar"] = 3,
+	     ["april"] = 4, ["apr"] = 4,
 	     ["may"] = 5,
 	     ["june"] = 6, ["jun"] = 6,
 	     ["july"] = 7, ["jul"] = 7,
@@ -36,10 +36,10 @@ mymodule.revmonths = {["january"] = 1, ["jan"] = 1,
 	     ["september"] = 9, ["sep"] = 9,
 	     ["october"] = 10, ["oct"] = 10,
 	     ["november"] = 11, ["nov"] = 11,
-	     ["december"] = 12, ["dec"] = 12 
+	     ["december"] = 12, ["dec"] = 12
 	     }
 
-mymodule.dow = { {"Sunday","Sun"}, 
+mymodule.dow = { {"Sunday","Sun"},
 	{"Monday","Mon"},
 	{"Tuesday","Tue"},
 	{"Wednesday","Wed"},
@@ -47,7 +47,7 @@ mymodule.dow = { {"Sunday","Sun"},
 	{"Friday","Fri"},
 	{"Saturday","Sat"}
 	}
-	
+
 mymodule.revdow = { ["sunday"] = 1, ["sun"] = 2,
 	   ["monday"] = 2, ["mon"] = 2,
 	   ["tuesday"] = 3, ["tue"] = 3,
@@ -57,7 +57,7 @@ mymodule.revdow = { ["sunday"] = 1, ["sun"] = 2,
 	   ["saturday"] = 7, ["sat"] =7
 	   }
 
--- + usually denotes right of PM and - means left. It seems that /etc/TZ needs these 
+-- + usually denotes right of PM and - means left. It seems that /etc/TZ needs these
 --reversed for alpine/busybox. difference in col 2 and 5
 --this list is not full. May need some more added. No Africa or Asia
 --Abrr TZ,Real Offset, FullName, Location, What would be put in /etc/TZ(busybox needed offset)
@@ -182,7 +182,7 @@ mymodule.timezones = {
 
 --give me a table
 --t = { {year=2007,month=1,day=2,hour=2}, {year=2006,month=1,day=5} }
---will return a table sorted by oldest <-> newest 
+--will return a table sorted by oldest <-> newest
 --to grab the largest and smallest a,b=g[1],g[table.maxn(g)]
 function mymodule.date_to_seconds (t)
 	g = {}
@@ -202,10 +202,10 @@ function mymodule.seconds_to_date (t)
 	g = {}
 	count = table.maxn(t)
 	for i = 1,count do
-	g[#g+1] = os.date(mymodule.formats,t[i])	
+	g[#g+1] = os.date(mymodule.formats,t[i])
 	end
-	
-	return g	
+
+	return g
 end
 
 --Wed Nov 28 14:01:23 UTC 2007
@@ -224,7 +224,7 @@ function mymodule.string_to_table (str)
 	year = temp[6]
 	g["year"] = year
 	temp2 = format.string_to_table(temp[4],":")
- 	hour = temp2[1] 
+	hour = temp2[1]
  	g["hour"] = hour
  	min = temp2[2]
  	g["min"] = min
@@ -244,8 +244,8 @@ mymodule.t_time = { field_names = {"years","days","hours","minutes","seconds"},
 	                   }
 
 function mymodule.date_diff (d1, d2)
-	g = {}	
-	if d2 == nil then d2 = os.time() end 
+	g = {}
+	if d2 == nil then d2 = os.time() end
 	--first sum of seconds
 	sum = math.abs(os.difftime(d1,d2))
 	--going to go through and get it smaller with each pass through the table
@@ -255,7 +255,7 @@ function mymodule.date_diff (d1, d2)
 	g[mymodule.t_time.field_names[a]] = hold
 	sum = (sum - (hold*b))
 	end
-	
+
 	return g
 end
 
@@ -307,7 +307,7 @@ end
 
 function mymodule.change_tz ( tz )
 	--give us something like CET-1, this is busy box offset need to fix.
-	
+
 	tz = string.gsub(tz, "%+", "%%+")
 	tz = string.gsub(tz, "%-", "%%-")
 	tz = "^" .. tz .. "$"
@@ -316,14 +316,14 @@ function mymodule.change_tz ( tz )
 	c = string.match(mymodule.timezones[a][5], tz)
 	if c ~= nil then result[#result +1] = c end
 	end
-	
-	if table.maxn(result) == 1 then 
+
+	if table.maxn(result) == 1 then
 	fs.write_file("/etc/TZ", result[1])
 	mess = "Success"
 	else
 	mess = "Too many matches."
 	end
-		
+
 	return mess,mymodule.what_tz()
 end
 

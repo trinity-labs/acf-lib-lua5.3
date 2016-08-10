@@ -127,7 +127,7 @@ function mymodule.read_file ( path )
 	end
 end
 
--- Returns an array with the contents of a file, 
+-- Returns an array with the contents of a file,
 -- or nil and the error message
 function mymodule.read_file_as_array ( path )
 	local file, error = io.open(path or "")
@@ -135,14 +135,14 @@ function mymodule.read_file_as_array ( path )
 		return nil, error
 	end
 	local f = {}
-	for line in file:lines() do 
+	for line in file:lines() do
 		table.insert ( f , line )
 		--sometimes you will see it like f[#f+1] = line
 	end
 	file:close()
 	return f
 end
-	
+
 -- write a string to a file, will replace file contents
 function mymodule.write_file ( path, str )
 	path = path or ""
@@ -174,7 +174,7 @@ function mymodule.find_files_as_array ( what, where, follow, t )
 	where = where or posix.getcwd()
 	what = what or ".*"
 	t =  t or {}
-	
+
 	local link
 	if follow and mymodule.is_link(where) then
 		link = posix.readlink(where)
@@ -209,7 +209,7 @@ end
 function mymodule.find ( what, where, follow )
 	local t = mymodule.find_files_as_array ( what, where, follow )
 	local idx = 0
-	return function () 
+	return function ()
 		idx = idx + 1
 		return t[idx]
 	end

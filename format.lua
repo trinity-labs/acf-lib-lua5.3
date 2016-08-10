@@ -65,8 +65,8 @@ function mymodule.parse_lines ( input, comment )
 		for i,line in ipairs(input) do
 			parse(line)
 		end
-	end	
-	
+	end
+
 	return lines
 end
 
@@ -110,8 +110,8 @@ function mymodule.parse_linesandwords ( input, comment )
 		for i,line in ipairs(input) do
 			parse(line)
 		end
-	end	
-	
+	end
+
 	return lines
 end
 
@@ -162,12 +162,12 @@ function mymodule.search_for_lines (input, find)
 		for i,line in ipairs(input) do
 			findfn(line)
 		end
-	end	
-	
+	end
+
 	return lines
 end
 
---string format function to capitalize the beginging of each word. 
+--string format function to capitalize the beginging of each word.
 function mymodule.cap_begin_word ( str )
 	--first need to do the first word
 	local data = string.gsub(str, "^%l", string.upper)
@@ -186,7 +186,7 @@ function mymodule.string_to_table ( text, delimiter)
 	local list = {}
 	if text then
 		-- this would result in endless loops
-		if string.find("", delimiter) then 
+		if string.find("", delimiter) then
 			-- delimiter matches empty string!
 			for i=1,#text do
 				list[#list + 1] = string.sub(text, i, i)
@@ -225,7 +225,7 @@ mymodule.expand_bash_syntax_vars = function (str)
 		local rval = ( deref(rvar) or "nil" )
 		str = string.gsub (str, w, mymodule.escapespecialcharacters(rval))
 	end
-	
+
 	return (str)
 end
 
@@ -321,7 +321,7 @@ function mymodule.update_ini_file (file, search_section, search_name, value)
 	if not file or not search_name or search_name == "" then
 		return file, false
 	end
-	
+
 	search_section = search_section or ""
 	local new_conf_file = {}
 	local section = ""
@@ -437,7 +437,7 @@ function mymodule.parse_ini_file (file, search_section, search_name)
 		return opts[search_section][search_name]
 	elseif opts and search_section then
 		return opts[search_section]
-	end	
+	end
 	return opts
 end
 
@@ -484,7 +484,7 @@ function mymodule.set_ini_section (file, search_section, section_content)
 					if (search_section == section) then
 						l = l .. "\n" .. section_content
 					end
-				end 
+				end
 			elseif (search_section == section) then
 				l = nil
 			end

@@ -37,7 +37,7 @@ function mymodule.is_ipv4(ipv4)
 	-- %d+	one or more digits
 	-- $	end of string
 	nums = {ipv4:match ("^(%d+)%.(%d+)%.(%d+)%.(%d+)$")}
-	
+
 	-- check if all nums are filled
 	if ( nums[1] == nil or
 		nums[2] == nil or
@@ -55,7 +55,7 @@ function mymodule.is_ipv4(ipv4)
 		-- at least one number is too big
 		return false, "Invalid Value"
 	end
-	
+
 	return true
 end
 
@@ -65,7 +65,7 @@ end
 function mymodule.is_partial_ipv4(ipv4)
 	local retval = false;
 	local nums = {};
-	
+
 	-- Check to see if any invalid characters
 	if not ipv4 or not ipv4:match("^[%d%.]+$") then
 		return false, "Invalid Format"
@@ -100,8 +100,8 @@ function mymodule.is_mac(mac)
 	-- check for valid characters
 	local step = 1;
 	while (step <= 17) do
-		if (string.sub(tmpmac, step, step) ~= ":") and 
-			 (string.sub(tmpmac, step, step) < "0" or string.sub(tmpmac, step, step) > "9") and 
+		if (string.sub(tmpmac, step, step) ~= ":") and
+			 (string.sub(tmpmac, step, step) < "0" or string.sub(tmpmac, step, step) > "9") and
 			 (string.sub(tmpmac, step, step) < "A" or string.sub(tmpmac, step, step) > "F") then
 			-- we have found an invalid character!
 			return false, "Invalid Chars"
@@ -122,7 +122,7 @@ function mymodule.is_mac(mac)
 	step = 1;
 	while (step <= 17) do
 		if ((string.sub(tmpmac, step, step) == ":") and
-				((step ~= 3) and (step ~= 6) and (step ~= 9) and (step ~= 12) and 
+				((step ~= 3) and (step ~= 6) and (step ~= 9) and (step ~= 12) and
 				 (step ~= 15))) then
 			return false, "Invalid Value"
 		end
@@ -133,7 +133,7 @@ function mymodule.is_mac(mac)
 end
 
 --
--- This function checks if the given input 
+-- This function checks if the given input
 -- consists of number-chars between 0..9 only
 -- and eventually a leading '-'
 --
@@ -147,15 +147,15 @@ end
 
 
 --
--- This function checks if the given input 
+-- This function checks if the given input
 -- consists of number-chars between 0..9 only
 -- and if it is within a given range.
 --
 function mymodule.is_integer_in_range(numstr, min, max)
-	return mymodule.is_integer(numstr) 
+	return mymodule.is_integer(numstr)
 		and tonumber(numstr) >= min
 		and tonumber(numstr) <= max
-	
+
 end
 
 --
