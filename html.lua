@@ -193,7 +193,8 @@ end
 
 
 -- v.value is the selected item (or an array if multiple)
--- v.option is an array of valid options (or an array of value, label)
+-- v.option is an array of valid string options or an array of {value, label}
+--  v.option can also contain optgroups (table containing above)
 -- NOTE use of value and values (plural)
 function mymodule.form.select ( v )
 	if ( v.name == nil ) then
@@ -224,21 +225,34 @@ function mymodule.form.select ( v )
 	else
 		reverseval[v.value]=1
 	end
-	for i, k in ipairs ( v.option ) do
+	local displayoption = function(opt)
 		local val, label
-		if type(k) == "string" then
-			val = k
-			label = k
+		if type(opt) == "string" then
+			val = opt
+			label = opt
+		elseif type(opt.value) == "string" then
+			val = opt.value
+			label = opt.label
+		end
+		if val then
+			str = str .. "<option "
+			if reverseval[val] then
+				str = str .. " selected"
+				reverseval[val] = nil
+			end
+			str = str .. nv_pair("value", val) .. ">" .. mymodule.html_escape(label) .. "</option>"
+		end
+	end
+	for i,opt in ipairs ( v.option ) do
+		if type(opt) == "table" and type(opt.value) == "table" then
+			str = str .. "<optgroup label=\"" .. mymodule.html_escape(opt.label) .. "\">"
+			for k,opt2 in ipairs( opt.value ) do
+				displayoption(opt2)
+			end
+			str = str .. "</optgroup>"
 		else
-			val = k.value
-			label = k.label
+			displayoption(opt)
 		end
-		str = str .. "<option "
-		if reverseval[val] then
-			str = str .. " selected"
-			reverseval[val] = nil
-		end
-		str = str .. nv_pair("value", val) .. ">" .. mymodule.html_escape(label) .. "</option>"
 	end
 	for val in pairs(reverseval) do
 		str = str .. '<option selected value="' .. mymodule.html_escape(val) ..'">[' .. mymodule.html_escape(val) .. ']</option>'
