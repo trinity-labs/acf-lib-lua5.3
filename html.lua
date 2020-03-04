@@ -117,7 +117,8 @@ generic_input = function ( field_type, v )
 			"name", "size", "checked", "maxlength",
 			"value", "length", "id", "src",
 			"align", "alt", "contenteditable",
-			"tabindex", "accesskey", "onfocus", "onblur", "title"
+			"tabindex", "accesskey", "onfocus", "onblur",
+			"title", "accept"
 			} ) do
 		str = str .. nv_pair ( k, v[k] )
 	end
