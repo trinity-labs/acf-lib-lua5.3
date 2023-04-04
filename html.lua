@@ -110,9 +110,14 @@ generic_input = function ( field_type, v )
 	if ( field_type == nil ) then
 		return nil
 	end
-
-	local str = string.format ( '<input class="%s %s" type="%s" ', mymodule.html_escape(v.class), mymodule.html_escape(field_type), mymodule.html_escape(field_type) )
-
+-- ADD placholder TO ALL INPUT WITHOUT SUBMIT -- 20230304 -- TRIИITY 
+	local str = string.format ( '<input class="%s %s" type="%s" placeholder="'..mymodule.html_escape(v.label)..'"', mymodule.html_escape(v.class), mymodule.html_escape(field_type), mymodule.html_escape(field_type) )
+-- ADD placholder ICON TO LOGON -- 20230304 -- TRIИITY
+		if v.name == "userid" then
+			str = string.format ( '<input class="%s %s" type="%s" placeholder="🔒 '..mymodule.html_escape(v.label)..'"', mymodule.html_escape(v.class), mymodule.html_escape(field_type), mymodule.html_escape(field_type) )
+		elseif v.name == "password" then
+		str = string.format ( '<input class="%s %s" type="%s" placeholder="🔑 '..mymodule.html_escape(v.label)..'"', mymodule.html_escape(v.class), mymodule.html_escape(field_type), mymodule.html_escape(field_type) )
+		end
 	for i,k in ipairs ( {
 			"name", "size", "checked", "maxlength",
 			"value", "length", "id", "src",
