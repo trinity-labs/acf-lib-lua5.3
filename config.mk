@@ -9,4 +9,4 @@ appdir=${acfdir}/app
 acflibdir=${acfdir}/lib
 sessionsdir=${localstatedir}/lib/acf/sessions
 bindir=${prefix}/bin
-luadir=${prefix}/share/lua/5.4/acf
+luadir=${prefix}/share/lua/5.3/acf
